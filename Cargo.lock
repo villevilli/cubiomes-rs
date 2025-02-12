@@ -75,6 +75,9 @@ dependencies = [
 [[package]]
 name = "cubiomes"
 version = "0.1.0"
+dependencies = [
+ "cubiomes-sys",
+]
 
 [[package]]
 name = "cubiomes-sys"

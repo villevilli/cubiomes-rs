@@ -44,6 +44,7 @@ fn main() {
     let bindings = bindgen::Builder::default()
         .header("wrapper.h")
         .parse_callbacks(Box::new(ignored_macros))
+        .newtype_enum(".*")
         .generate()
         .expect("Unable to generate binding for cubiomes");
 
