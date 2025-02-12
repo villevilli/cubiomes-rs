@@ -2,7 +2,7 @@
 
 members = [
   "cubiomes-sys",
-  "cubiomes", "lol",
+  "cubiomes", 
 ]
 
 resolver = "3"
