@@ -1,0 +1,8 @@
+[workspace]
+
+members = [
+  "cubiomes-sys",
+  "cubiomes", "lol",
+]
+
+resolver = "3"
