@@ -12,6 +12,8 @@ pub enum GeneratorError {
         "Function getBiomeAt failed (the ffi function returned -1), did you perhaps forgot to initialize the seed?"
     )]
     GetBiomeAtFailure,
+    #[error("Function genBiomes failed (the ffi function did not return 0, it returne {0})")]
+    GenBiomeToCacheFailure(i32),
 }
 
 bitflags! {
@@ -32,6 +34,12 @@ pub enum Scale {
 
 pub struct Generator {
     generator: cubiomes_sys::Generator,
+}
+
+pub struct Cache<'a> {
+    cache: *mut i32,
+    range: cubiomes_sys::Range,
+    generator: &'a Generator,
 }
 
 impl Generator {
@@ -74,5 +82,42 @@ impl Generator {
                 n => FromPrimitive::from_i32(n).ok_or(GeneratorError::BiomeIDOutOfRange(n)),
             }
         }
+    }
+
+    ///Fills the provided cache from the generator
+    ///
+    /// # Safety
+    /// The caller must guarantee, that the cache is able to contain the generated data.
+    /// The best way to guarantee this, is to use a cache generated from this generator
+    /// using the ``new_cache()`` function.
+    unsafe fn generate_biomes_to_cache(&self, cache: &mut Cache) -> Result<(), GeneratorError> {
+        let result_num = cubiomes_sys::genBiomes(&self.generator, cache.cache, cache.range);
+
+        if result_num != 0 {
+            return Err(GeneratorError::GenBiomeToCacheFailure(result_num));
+        }
+        Ok(())
+    }
+}
+
+impl<'a> Generator {
+    pub fn new_cache(&'a self, range: cubiomes_sys::Range) -> Cache<'a> {
+        let cache;
+
+        unsafe {
+            cache = cubiomes_sys::allocCache(&self.generator, range);
+        }
+
+        Cache {
+            cache,
+            range,
+            generator: self,
+        }
+    }
+}
+
+impl Cache<'_> {
+    pub fn fill_cache(&mut self) -> Result<(), GeneratorError> {
+        unsafe { self.generator.generate_biomes_to_cache(self) }
     }
 }
