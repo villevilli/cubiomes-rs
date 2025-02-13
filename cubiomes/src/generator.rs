@@ -1,7 +1,9 @@
+pub use cubiomes_sys::{enums, Dimension};
+
 use std::mem::{self, transmute};
 
 use bitflags::bitflags;
-use cubiomes_sys::{biome_enum, num_traits::FromPrimitive, Dimension};
+use cubiomes_sys::{enums, num_traits::FromPrimitive, Dimension};
 use thiserror::Error;
 
 #[derive(Error, Debug, PartialEq, Eq)]
@@ -44,7 +46,7 @@ pub struct Cache<'a> {
 
 impl Generator {
     /// Initializes a new generator for the given minecraft version and flags
-    pub fn new(version: biome_enum::MCVersion, flags: Flags) -> Self {
+    pub fn new(version: enums::MCVersion, flags: Flags) -> Self {
         unsafe {
             let mut generator: cubiomes_sys::Generator = mem::zeroed();
 
@@ -75,7 +77,7 @@ impl Generator {
         x: i32,
         y: i32,
         z: i32,
-    ) -> Result<biome_enum::BiomeID, GeneratorError> {
+    ) -> Result<enums::BiomeID, GeneratorError> {
         unsafe {
             match cubiomes_sys::getBiomeAt(&self.generator, scale as i32, x, y, z) {
                 -1 => Err(GeneratorError::GetBiomeAtFailure),

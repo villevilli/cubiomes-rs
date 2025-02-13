@@ -10,13 +10,13 @@ extern crate num_derive;
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
-/// This module contains generated rust enums from biomes.h
+/// This module contains generated rust enums
 ///
 /// ## Safety
 /// The enums should not be used directly as outputs for ffi, as that can cause
 /// ub if cubiomes returns something that doesnt fit the enum. They are included
 /// with the assumption that the user validates cubiomes output before constructing
 /// them.
-pub mod biome_enum {
+pub mod enums {
     include!(concat!(env!("OUT_DIR"), "/biome_enums.rs"));
 }

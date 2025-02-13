@@ -1,10 +1,4 @@
-use std::{
-    collections::HashSet,
-    env,
-    os::unix::process::CommandExt,
-    path::PathBuf,
-    process::{Command, ExitStatus},
-};
+use std::{collections::HashSet, env, path::PathBuf, process::Command};
 
 #[derive(Debug)]
 struct IgnoreMacros(HashSet<String>);

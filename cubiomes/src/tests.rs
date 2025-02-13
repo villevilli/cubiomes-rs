@@ -1,15 +1,15 @@
 use std::ffi::CStr;
 
 use cubiomes_sys::{
+    enums::{self, MCVersion},
     Dimension,
-    biome_enum::{self, MCVersion},
 };
 
 use crate::generator::{Flags, Generator, GeneratorError, Scale};
 
 #[test]
 fn biome_to_str_sanity() {
-    let biome = biome_enum::BiomeID::badlands;
+    let biome = enums::BiomeID::badlands;
     let version = MCVersion::MC_1_21_WD;
 
     let str;
@@ -29,7 +29,7 @@ fn simple_biome_test() -> Result<(), GeneratorError> {
 
     assert_eq!(
         generator.get_biome_at(Scale::Block, 700, 100, -2300)?,
-        biome_enum::BiomeID::mushroomIsland
+        enums::BiomeID::mushroomIsland
     );
     Ok(())
 }
