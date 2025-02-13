@@ -1,4 +1,4 @@
-use std::{collections::HashSet, env, path::PathBuf, process::Command};
+use std::{collections::HashSet, default, env, path::PathBuf, process::Command};
 
 #[derive(Debug)]
 struct IgnoreMacros(HashSet<String>);
@@ -48,9 +48,22 @@ fn main() {
         .generate()
         .expect("Unable to generate binding for cubiomes");
 
+    // Generates rustified enums for use in a wrapper library
+    let biome_enum_bindings = bindgen::Builder::default()
+        .header("cubiomes/biomes.h")
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
+        .blocklist_function(".*") //Blocks all functions, as we are only intrested in the enums
+        .rustified_non_exhaustive_enum(".*")
+        .generate()
+        .expect("Unable to generate rustified enums for cubiomes");
+
     let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
 
     bindings
         .write_to_file(out_path.join("bindings.rs"))
-        .expect("Couldn't write bindings")
+        .expect("Couldn't write bindings");
+
+    biome_enum_bindings
+        .write_to_file(out_path.join("biome_enums.rs"))
+        .expect("Couldn't write biome enums");
 }
