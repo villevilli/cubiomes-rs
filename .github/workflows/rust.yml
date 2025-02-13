@@ -13,7 +13,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Update Rust
+      run: |
+        apt-get update
+        apt-get upgrade
+        rustup update
     - name: Build
       run: cargo build --verbose
     - name: Run tests
