@@ -1,5 +1,3 @@
-pub use cubiomes_sys::{enums, Dimension};
-
 use std::mem::{self, transmute};
 
 use bitflags::bitflags;
