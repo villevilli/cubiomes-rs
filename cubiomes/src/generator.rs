@@ -1,7 +1,10 @@
-use std::mem::{self, transmute};
+use std::{
+    i32,
+    mem::{self, transmute},
+};
 
 use bitflags::bitflags;
-use cubiomes_sys::{enums, num_traits::FromPrimitive, Dimension};
+use cubiomes_sys::{enums, getMinCacheSize, num_traits::FromPrimitive, Dimension, Range};
 use thiserror::Error;
 
 #[derive(Error, Debug, PartialEq, Eq)]
@@ -14,6 +17,8 @@ pub enum GeneratorError {
     GetBiomeAtFailure,
     #[error("Function genBiomes failed (the ffi function did not return 0, it returne {0})")]
     GenBiomeToCacheFailure(i32),
+    #[error("Index out of bounds")]
+    IndexOutOfBound,
 }
 
 bitflags! {
@@ -37,7 +42,7 @@ pub struct Generator {
 }
 
 pub struct Cache<'a> {
-    cache: *mut i32,
+    cache: Vec<i32>,
     range: cubiomes_sys::Range,
     generator: &'a Generator,
 }
@@ -84,6 +89,14 @@ impl Generator {
         }
     }
 
+    fn get_min_cache_size_from_range(&self, range: Range) -> usize {
+        self.get_min_cache_size(range.scale, range.sx, range.sy, range.sz)
+    }
+
+    fn get_min_cache_size(&self, scale: i32, size_x: i32, size_y: i32, size_z: i32) -> usize {
+        unsafe { getMinCacheSize(&self.generator, scale, size_x, size_y, size_z) }
+    }
+
     ///Fills the provided cache from the generator
     ///
     /// # Safety
@@ -91,7 +104,13 @@ impl Generator {
     /// The best way to guarantee this, is to use a cache generated from this generator
     /// using the ``new_cache()`` function.
     unsafe fn generate_biomes_to_cache(&self, cache: &mut Cache) -> Result<(), GeneratorError> {
-        let result_num = cubiomes_sys::genBiomes(&self.generator, cache.cache, cache.range);
+        let result_num =
+            cubiomes_sys::genBiomes(&self.generator, cache.cache.as_mut_ptr(), cache.range);
+
+        //We set the caches lenght to that which the cubiome docs state it should be
+        cache
+            .cache
+            .set_len(self.get_min_cache_size_from_range(cache.range));
 
         if result_num != 0 {
             return Err(GeneratorError::GenBiomeToCacheFailure(result_num));
@@ -102,11 +121,9 @@ impl Generator {
 
 impl<'a> Generator {
     pub fn new_cache(&'a self, range: cubiomes_sys::Range) -> Cache<'a> {
-        let cache;
+        let cache_size = self.get_min_cache_size_from_range(range);
 
-        unsafe {
-            cache = cubiomes_sys::allocCache(&self.generator, range);
-        }
+        let cache = Vec::with_capacity(cache_size);
 
         Cache {
             cache,
@@ -119,5 +136,19 @@ impl<'a> Generator {
 impl Cache<'_> {
     pub fn fill_cache(&mut self) -> Result<(), GeneratorError> {
         unsafe { self.generator.generate_biomes_to_cache(self) }
+    }
+
+    pub fn get_cache(&mut self) -> &Vec<i32> {
+        &self.cache
+    }
+
+    pub fn get_biome_at(&self, x: i32, y: i32, z: i32) -> Result<enums::BiomeID, GeneratorError> {
+        let raw_biomeid = *self
+            .cache
+            .get((y * self.range.sx * self.range.sz + z * self.range.sx + x) as usize)
+            .ok_or(GeneratorError::IndexOutOfBound)?;
+
+        enums::BiomeID::from_i32(raw_biomeid)
+            .ok_or_else(|| GeneratorError::BiomeIDOutOfRange(raw_biomeid))
     }
 }
