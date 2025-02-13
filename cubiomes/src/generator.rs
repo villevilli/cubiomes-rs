@@ -1,6 +1,6 @@
 use std::{
-    i32,
-    mem::{self, transmute},
+    alloc::{alloc, dealloc, Layout},
+    mem::transmute,
 };
 
 use bitflags::bitflags;
@@ -38,7 +38,15 @@ pub enum Scale {
 }
 
 pub struct Generator {
-    generator: cubiomes_sys::Generator,
+    generator: *mut cubiomes_sys::Generator,
+}
+
+impl Drop for Generator {
+    fn drop(&mut self) {
+        unsafe {
+            dealloc(self.generator as *mut u8, Layout::new::<Generator>());
+        }
+    }
 }
 
 pub struct Cache<'a> {
@@ -51,9 +59,10 @@ impl Generator {
     /// Initializes a new generator for the given minecraft version and flags
     pub fn new(version: enums::MCVersion, flags: Flags) -> Self {
         unsafe {
-            let mut generator: cubiomes_sys::Generator = mem::zeroed();
+            let generator =
+                alloc(Layout::new::<cubiomes_sys::Generator>()) as *mut cubiomes_sys::Generator;
 
-            cubiomes_sys::setupGenerator(&mut generator, version as i32, flags.bits());
+            cubiomes_sys::setupGenerator(generator, version as i32, flags.bits());
             Self {
                 generator: generator,
             }
@@ -65,7 +74,7 @@ impl Generator {
     /// will result in the generation failing
     pub fn apply_seed(&mut self, dimension: Dimension, seed: i64) {
         unsafe {
-            cubiomes_sys::applySeed(&mut self.generator, dimension.0, transmute(seed));
+            cubiomes_sys::applySeed(self.generator, dimension.0, transmute(seed));
         }
     }
 
@@ -82,7 +91,7 @@ impl Generator {
         z: i32,
     ) -> Result<enums::BiomeID, GeneratorError> {
         unsafe {
-            match cubiomes_sys::getBiomeAt(&self.generator, scale as i32, x, y, z) {
+            match cubiomes_sys::getBiomeAt(self.generator, scale as i32, x, y, z) {
                 -1 => Err(GeneratorError::GetBiomeAtFailure),
                 n => FromPrimitive::from_i32(n).ok_or(GeneratorError::BiomeIDOutOfRange(n)),
             }
@@ -94,7 +103,7 @@ impl Generator {
     }
 
     fn get_min_cache_size(&self, scale: i32, size_x: i32, size_y: i32, size_z: i32) -> usize {
-        unsafe { getMinCacheSize(&self.generator, scale, size_x, size_y, size_z) }
+        unsafe { getMinCacheSize(self.generator, scale, size_x, size_y, size_z) }
     }
 
     ///Fills the provided cache from the generator
@@ -105,7 +114,7 @@ impl Generator {
     /// using the ``new_cache()`` function.
     unsafe fn generate_biomes_to_cache(&self, cache: &mut Cache) -> Result<(), GeneratorError> {
         let result_num =
-            cubiomes_sys::genBiomes(&self.generator, cache.cache.as_mut_ptr(), cache.range);
+            cubiomes_sys::genBiomes(self.generator, cache.cache.as_mut_ptr(), cache.range);
 
         //We set the caches lenght to that which the cubiome docs state it should be
         cache

@@ -1,6 +1,6 @@
 pub mod generator;
 
-pub use cubiomes_sys::{enums, Dimension};
+pub use cubiomes_sys::{enums, Dimension, Range};
 
 #[cfg(test)]
 mod tests;
