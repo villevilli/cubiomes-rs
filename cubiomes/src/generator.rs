@@ -1,7 +1,7 @@
 use std::mem::{self, transmute};
 
 use bitflags::bitflags;
-use cubiomes_sys::{Dimension, biome_enum, num_traits::FromPrimitive};
+use cubiomes_sys::{biome_enum, num_traits::FromPrimitive, Dimension};
 use thiserror::Error;
 
 #[derive(Error, Debug, PartialEq, Eq)]
@@ -35,6 +35,7 @@ pub struct Generator {
 }
 
 impl Generator {
+    /// Initializes a new generator for the given minecraft version and flags
     pub fn new(version: biome_enum::MCVersion, flags: Flags) -> Self {
         unsafe {
             let mut generator: cubiomes_sys::Generator = mem::zeroed();
@@ -46,12 +47,20 @@ impl Generator {
         }
     }
 
+    /// Sets the seed for the generator
+    /// Trying to generate something without first selecting a seed
+    /// will result in the generation failing
     pub fn apply_seed(&mut self, dimension: Dimension, seed: i64) {
         unsafe {
             cubiomes_sys::applySeed(&mut self.generator, dimension.0, transmute(seed));
         }
     }
 
+    /// Gets the biome at the specified coordinates and scale
+    ///
+    /// Returns a biomeid or then an error.
+    /// For the most consitent results querying surface biomes
+    /// you should use 256 as the y value (minecraft build limit)
     pub fn get_biome_at(
         &self,
         scale: Scale,

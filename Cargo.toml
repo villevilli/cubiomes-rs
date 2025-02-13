@@ -5,4 +5,4 @@ members = [
   "cubiomes", 
 ]
 
-resolver = "3"
+resolver = "2"
