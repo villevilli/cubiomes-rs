@@ -1,4 +1,10 @@
-use std::{collections::HashSet, env, path::PathBuf, process::Command};
+use std::{
+    collections::HashSet,
+    env,
+    os::unix::process::CommandExt,
+    path::PathBuf,
+    process::{Command, ExitStatus},
+};
 
 #[derive(Debug)]
 struct IgnoreMacros(HashSet<String>);
@@ -23,17 +29,25 @@ impl bindgen::callbacks::ParseCallbacks for DeriveMacros {
 }
 
 fn main() {
-    Command::new("make")
+    if !Command::new("make")
         .arg("-C")
         .arg("cubiomes/")
-        .spawn()
-        .expect("Failed to build cubiomes");
+        .status()
+        .expect("Failed to build cubiomes")
+        .success()
+    {
+        panic!("Make did not return 0")
+    }
 
-    Command::new("mv")
+    if !Command::new("mv")
         .arg("cubiomes/libcubiomes.a")
         .arg(env::var("OUT_DIR").unwrap())
-        .spawn()
-        .expect("Failed to move libcubiomes");
+        .status()
+        .expect("Failed to move libcubiomes")
+        .success()
+    {
+        panic!("mv did not return 0")
+    }
 
     println!("cargo:rustc-link-search={}/", env::var("OUT_DIR").unwrap());
     println!("cargo:rustc-link-lib=static=cubiomes");
