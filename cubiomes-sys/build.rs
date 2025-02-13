@@ -1,4 +1,4 @@
-use std::{collections::HashSet, default, env, path::PathBuf, process::Command};
+use std::{collections::HashSet, env, path::PathBuf, process::Command};
 
 #[derive(Debug)]
 struct IgnoreMacros(HashSet<String>);
@@ -10,6 +10,15 @@ impl bindgen::callbacks::ParseCallbacks for IgnoreMacros {
         } else {
             bindgen::callbacks::MacroParsingBehavior::Default
         }
+    }
+}
+
+#[derive(Debug)]
+struct DeriveMacros(Vec<String>);
+
+impl bindgen::callbacks::ParseCallbacks for DeriveMacros {
+    fn add_derives(&self, _info: &bindgen::callbacks::DeriveInfo<'_>) -> Vec<String> {
+        self.0.clone()
     }
 }
 
@@ -45,13 +54,17 @@ fn main() {
         .header("wrapper.h")
         .parse_callbacks(Box::new(ignored_macros))
         .newtype_enum(".*")
+        .layout_tests(true)
         .generate()
         .expect("Unable to generate binding for cubiomes");
 
     // Generates rustified enums for use in a wrapper library
     let biome_enum_bindings = bindgen::Builder::default()
         .header("cubiomes/biomes.h")
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
+        .parse_callbacks(Box::new(DeriveMacros(vec![
+            "FromPrimitive".into(),
+            "ToPrimitive".into(),
+        ])))
         .blocklist_function(".*") //Blocks all functions, as we are only intrested in the enums
         .rustified_non_exhaustive_enum(".*")
         .generate()

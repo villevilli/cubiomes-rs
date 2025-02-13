@@ -3,6 +3,11 @@
 #![allow(non_snake_case)]
 #![allow(improper_ctypes)]
 
+pub use num_traits;
+
+#[macro_use]
+extern crate num_derive;
+
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
 /// This module contains generated rust enums from biomes.h
