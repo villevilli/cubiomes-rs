@@ -35,7 +35,7 @@ fn main() {
         .spawn()
         .expect("Failed to move libcubiomes");
 
-    println!("cargo:rustc-link-search={}", env::var("OUT_DIR").unwrap());
+    println!("cargo:rustc-link-search={}/", env::var("OUT_DIR").unwrap());
     println!("cargo:rustc-link-lib=static=cubiomes");
 
     let ignored_macros = IgnoreMacros(
