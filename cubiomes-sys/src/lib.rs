@@ -3,6 +3,7 @@
 #![allow(non_snake_case)]
 #![allow(improper_ctypes)]
 #![allow(clippy::all)]
+#![allow(rustdoc::all)]
 
 pub use num_traits;
 

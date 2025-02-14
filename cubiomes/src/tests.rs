@@ -1,20 +1,25 @@
 use std::ffi::CStr;
 
 use cubiomes_sys::{
-    enums::{self, MCVersion},
-    Dimension, Range,
+    enums::{self, Dimension},
+    Range,
 };
 
-use crate::generator::{Flags, Generator, GeneratorError, Scale};
+use crate::enums::MCVersion;
+use crate::generator::{Generator, GeneratorError, GeneratorFlags, Scale};
 
 fn init_generator() -> Generator {
     let seed: i64 = -4804349703814383506;
     let mc_version = MCVersion::MC_1_21_WD;
 
-    let mut generator = Generator::new(mc_version, Flags::empty());
-    generator.apply_seed(Dimension::DIM_OVERWORLD, seed);
+    // SAFETY:
+    // seed is immediatly applied
+    unsafe {
+        let mut generator = Generator::new_without_seed(mc_version, GeneratorFlags::empty());
+        generator.apply_seed(Dimension::DIM_OVERWORLD, seed);
 
-    generator
+        generator
+    }
 }
 
 #[test]
@@ -23,6 +28,8 @@ fn biome_to_str_sanity() {
     let version = MCVersion::MC_1_21_WD;
 
     let _str;
+
+    #[allow(clippy::undocumented_unsafe_blocks)]
     unsafe {
         _str = CStr::from_ptr(cubiomes_sys::biome2str(version as i32, biome as i32));
     }
