@@ -6,6 +6,9 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  # Make sure CI fails on all warnings
+  RUSTFLAGS: "-Dwarnings"
+
 
 jobs:
   build:
@@ -19,5 +22,7 @@ jobs:
         submodules: true
     - name: Build
       run: cargo build --verbose
+    - name: Check With Clipy
+      run: cargo clippy --all-features
     - name: Run tests
       run: cargo test --verbose
