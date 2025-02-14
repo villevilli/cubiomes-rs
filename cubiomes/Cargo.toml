@@ -3,7 +3,11 @@ name = "cubiomes"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+default = ["cc_build"]
+cc_build = ["cubiomes-sys/cc_build"]
+
 [dependencies]
 thiserror = "2.0"
 bitflags = "2.0"
-cubiomes-sys = {path="../cubiomes-sys"}
+cubiomes-sys = { path = "../cubiomes-sys", default-features = false }

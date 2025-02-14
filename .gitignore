@@ -14,3 +14,6 @@ target/
 
 # Since this is a library, ignore cargo.lock
 Cargo.lock
+
+# Ds store
+**/*.DS_Store

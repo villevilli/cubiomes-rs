@@ -3,6 +3,10 @@ name = "cubiomes-sys"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+default = ["cc_build"]
+cc_build = ["dep:cc"]
+
 [dependencies]
 num-traits = "0.2"
 num-derive = "0.4"
@@ -10,4 +14,4 @@ num-derive = "0.4"
 
 [build-dependencies]
 bindgen = "0.71.0"
-cc = "1.0"
+cc = { version = "1.0", optional = true }
