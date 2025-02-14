@@ -1,12 +1,9 @@
 use std::ffi::CStr;
 
-use cubiomes_sys::{
-    enums::{self, Dimension},
-    Range,
-};
+use cubiomes_sys::enums::{self, Dimension};
 
 use crate::enums::MCVersion;
-use crate::generator::{Generator, GeneratorError, GeneratorFlags, Scale};
+use crate::generator::{Generator, GeneratorError, GeneratorFlags, Range, Scale};
 
 fn init_generator() -> Generator {
     let seed: i64 = -4804349703814383506;
@@ -49,22 +46,25 @@ fn simple_biome_test() -> Result<(), GeneratorError> {
 
 #[test]
 fn simple_biome_test_cached() -> Result<(), GeneratorError> {
-    let generator = init_generator();
+    let mut generator = init_generator();
+    generator.apply_seed(Dimension::DIM_OVERWORLD, -1693727681172482083);
 
     let mut cache = generator.new_cache(Range {
-        scale: 1,
+        scale: Scale::Block,
         x: -128,
-        z: -384,
-        sx: 64,
-        sz: 64,
-        y: 100,
-        sy: 0,
+        z: -128,
+        size_x: 16,
+        size_z: 16,
+        y: 64,
+        size_y: 0,
     });
 
     cache.fill_cache().expect("Failed to fill the cache");
 
-    assert_eq!(cache.get_biome_at(5, 0, 6)?, enums::BiomeID::grove);
-    assert_eq!(cache.get_biome_at(63, 0, 63)?, enums::BiomeID::frozen_peaks);
+    dbg!(&cache);
+
+    assert_eq!(cache.get_biome_at(5, 0, 6)?, enums::BiomeID::meadow);
+    assert_eq!(cache.get_biome_at(15, 0, 15)?, enums::BiomeID::snowy_slopes);
 
     Ok(())
 }

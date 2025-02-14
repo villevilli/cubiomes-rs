@@ -5,44 +5,171 @@
 
 use std::{
     alloc::{alloc, dealloc, Layout},
+    fmt::Debug,
     mem::transmute,
 };
 
 use bitflags::bitflags;
 use thiserror::Error;
 
-use crate::{enums, Range};
+use crate::enums;
 use cubiomes_sys::{getMinCacheSize, num_traits::FromPrimitive};
 
+///An error with the generator
+///
+/// This enum is produced as an error from the generator
 #[derive(Error, Debug, PartialEq, Eq)]
 pub enum GeneratorError {
+    /// Biomeid produced by cubiomes is not a valid biome
+    ///
+    /// This error indicates that the underlying cubiomes library produced
+    /// a biome that does not map to any valid biomeid. The out of range
+    /// biomeid is given as a parameter
+    ///
+    /// This error probably indicates a bug, so feel free to report
+    /// how you got it
     #[error("Biome id {0} is out of range and is not a valid biomeid")]
     BiomeIDOutOfRange(i32),
     #[error(
         "Function getBiomeAt failed with error code -1, did you forgot to initialize the seed?"
     )]
+    /// The underlying cubiomes library indicates an error with your biome request
+    ///
+    /// Cubiomes function getBiomeAt returned -1
     GetBiomeAtFailure,
+    /// Failed to fill the cache
+    ///
+    /// This indicates, that cubiomes failed to fill the cache and returned a non 0
+    /// exit code.
     #[error("Function genBiomes failed with error code {0}")]
     GenBiomeToCacheFailure(i32),
+    /// Index out of bounds while getting from the cache
+    ///
+    /// This indicates that [`Cache::get_biome_at()`] tried to get an index
+    /// outside the bounds of the internal vector. This either means that
+    /// the cache has not yet been filled, or you tried to get something outside
+    /// of the lenght of the vector
     #[error("Index out of bounds")]
     IndexOutOfBound,
+    #[error("Failed to convert range")]
+    /// An error happened converting the range for use with cubiomes
+    TryFromRangeError(TryFromRangeError),
+}
+
+impl From<TryFromRangeError> for GeneratorError {
+    fn from(value: TryFromRangeError) -> Self {
+        Self::TryFromRangeError(value)
+    }
+}
+
+/// The given size x y or z is too big to fit an i32.
+///
+///
+#[derive(Error, Debug, PartialEq, Eq)]
+pub enum TryFromRangeError {
+    #[error("x sixe is out of bounds for range")]
+    #[allow(missing_docs)]
+    XSizeOutOfBounds,
+    #[error("z size is out of bounds for range")]
+    #[allow(missing_docs)]
+    ZSizeOutOfBounds,
+    #[error("y size is out of bounds for range")]
+    #[allow(missing_docs)]
+    YSizeOutOfBouns,
 }
 
 bitflags! {
     /// Flags for the cubiomes generator
+    ///
+    /// # Usage
+    /// This indicates flags to pass to cubiomes. Unless you know what
+    /// you are doing, you should probably leave these empty. Check the
+    /// actual cubiomes library for what they do.
     pub struct GeneratorFlags: u32 {
+        #[allow(missing_docs)]
         const LargeBiomes = 0x1;
+        #[allow(missing_docs)]
         const NoBetaOcean = 0x2;
+        #[allow(missing_docs)]
         const ForceOceanVariants = 0x4;
         //the source may set any bits
+        #[allow(missing_docs)]
         const _ = !0;
     }
 }
 
-/// Valid scales for getting a single points biome
+/// A scale for the [Range]
+///
+/// The scale reperesents valid options for giving to the generator
+/// as a scale.
+#[repr(i32)]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub enum Scale {
+    /// A scale of 1:1, Block scale
     Block = 1,
-    Biome = 4,
+    /// A scale of 1:4
+    Quad = 4,
+    /// A scale of 1:16, the size of a minecraft chunk
+    Chunk = 16,
+    /// A scale of 1:64, the size of 4 minecraft chunks
+    QuadChunk = 64,
+    /// A scale of 1:256, half of a minecraft region
+    HalfRegion = 256,
+}
+/// Size and position for a [Cache]
+///
+/// The range represents a location and size of a cache.
+///
+/// The position and size of the range is scaled by its [Range::scale] attribute.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub struct Range {
+    /// Scale used for the coordinates
+    pub scale: Scale,
+    /// Position of the top left corner of the range, scaled by the [Scale]
+    ///
+    /// to map this into minecraft coordinates the x is multiplied by the scale
+    pub x: i32,
+    /// Position of the top left corner of the range, scaled by the [Scale]
+    ///
+    /// to map this into minecraft coordinates the x is multiplied by the scale
+    pub z: i32,
+    /// Size of the range in x coordinates, scaled by the [Scale]
+    ///
+    pub size_x: u32,
+    /// Size of the range in z coordinates, scaled by the [Scale]
+    pub size_z: u32,
+    /// The y coordinate of the range scaled either 1:1 or 1:4 depending on [Scale]
+    ///
+    /// Scale is 1:1 for [Scale::Block] other scales get a 1:4 mapping of the
+    /// y coordinate
+    pub y: i32,
+    /// Veritcal size of the cube. 0 and 1 mean a 2d plane
+    pub size_y: u32,
+}
+
+impl TryFrom<Range> for cubiomes_sys::Range {
+    type Error = GeneratorError;
+
+    fn try_from(value: Range) -> Result<Self, Self::Error> {
+        Ok(Self {
+            scale: value.scale as i32,
+            x: value.x,
+            z: value.z,
+            sx: value
+                .size_x
+                .try_into()
+                .map_err(|_| TryFromRangeError::XSizeOutOfBounds)?,
+            sz: value
+                .size_z
+                .try_into()
+                .map_err(|_| TryFromRangeError::ZSizeOutOfBounds)?,
+            y: value.y,
+            sy: value
+                .size_y
+                .try_into()
+                .map_err(|_| TryFromRangeError::YSizeOutOfBouns)?,
+        })
+    }
 }
 
 /// The cubioems generator
@@ -52,8 +179,8 @@ pub enum Scale {
 ///
 /// A new instance of the generator can be created with [`Generator::new()`]
 ///
-/// Biomes can be generated either with [`self.get_biome_at()`] for single points
-/// in conjuntion with a [`Cache`] generated by [`self.new_cache()`]
+/// Biomes can be generated either with [`Self::get_biome_at()`] for single points
+/// in conjuntion with a [`Cache`] generated by [`Self::new_cache()`]
 pub struct Generator {
     generator: *mut cubiomes_sys::Generator,
 }
@@ -67,17 +194,6 @@ impl Drop for Generator {
             dealloc(self.generator as *mut u8, Layout::new::<Generator>());
         }
     }
-}
-
-/// A cache for generating and holding a chunk of biome data
-///
-/// The cache is usually generated with [`Generator::new_cache()`]
-/// and holds a vector filled with biome data.
-///
-pub struct Cache<'a> {
-    cache: Vec<i32>,
-    range: cubiomes_sys::Range,
-    generator: &'a Generator,
 }
 
 impl Generator {
@@ -120,10 +236,10 @@ impl Generator {
     ///
     /// This function initializes a new cubiomes generator for the specified
     /// version of minecraft with the specified flags. To use the generator it
-    /// must be given a seed with [`self.apply_seed()`]
+    /// must be given a seed with [`Self::apply_seed()`]
     ///
     /// # Safety
-    /// Before using any generation functions one must use [`self.apply_seed()`]
+    /// Before using any generation functions one must use [`Self::apply_seed()`]
     /// to give the generator a seed, otherwise the generation will fail.
     ///
     /// # Examples
@@ -157,7 +273,7 @@ impl Generator {
     /// Sets the seed for the generator
     ///
     /// Sets a new seed to the generator. This can either be used for
-    /// initialization if the generator was generated with [`self.new_without_seed()`]
+    /// initialization if the generator was generated with [`Self::new_without_seed()`]
     /// or changing the seed of the generator
     pub fn apply_seed(&mut self, dimension: enums::Dimension, seed: i64) {
         // SAFETY:
@@ -199,7 +315,9 @@ impl Generator {
     }
 
     fn get_min_cache_size_from_range(&self, range: Range) -> usize {
-        self.get_min_cache_size(range.scale, range.sx, range.sy, range.sz)
+        let raw_range: cubiomes_sys::Range = range.try_into().unwrap();
+
+        self.get_min_cache_size(raw_range.scale, raw_range.sx, raw_range.sy, raw_range.sz)
     }
 
     /// Gets the minimum cache size for a specific sized range
@@ -229,8 +347,11 @@ impl Generator {
     /// The best way to guarantee this, is to use a cache generated from this generator
     /// using the [Self::new_cache()] function.
     unsafe fn generate_biomes_to_cache(&self, cache: &mut Cache) -> Result<(), GeneratorError> {
-        let result_num =
-            cubiomes_sys::genBiomes(self.generator, cache.cache.as_mut_ptr(), cache.range);
+        let result_num = cubiomes_sys::genBiomes(
+            self.generator,
+            cache.cache.as_mut_ptr(),
+            cache.range.try_into()?,
+        );
 
         // If error is returned from genbiomes, dont resize the vec as it may contain garbage data
         if result_num != 0 {
@@ -250,7 +371,7 @@ impl<'a> Generator {
     /// Generates a new cache for the given generator
     ///
     /// This function creates a new [`Cache`] against this version of the generator
-    pub fn new_cache(&'a self, range: cubiomes_sys::Range) -> Cache<'a> {
+    pub fn new_cache(&'a self, range: Range) -> Cache<'a> {
         let cache_size = self.get_min_cache_size_from_range(range);
 
         let cache = Vec::with_capacity(cache_size);
@@ -260,6 +381,29 @@ impl<'a> Generator {
             range,
             generator: self,
         }
+    }
+}
+
+/// A cache for generating and holding a chunk of biome data
+///
+/// The cache is usually generated with [`Generator::new_cache()`]
+/// and holds a vector filled with biome data.
+///
+pub struct Cache<'a> {
+    cache: Vec<i32>,
+    range: Range,
+    generator: &'a Generator,
+}
+
+impl Debug for Cache<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "Range: {:?}", &self.range)?;
+        writeln!(f, "Cache: ")?;
+
+        for line in self.cache.chunks(self.range.size_x as usize) {
+            writeln!(f, "{:?}", line)?
+        }
+        Ok(())
     }
 }
 
@@ -282,8 +426,7 @@ impl Cache<'_> {
     /// # Examples
     ///
     /// ```
-    /// use cubiomes::generator::Cache;
-    /// use cubiomes::Range;
+    /// use cubiomes::generator::{Cache, Range, Scale};
     ///
     /// use cubiomes::generator::{Generator, GeneratorFlags};
     /// use cubiomes::enums::{MCVersion, Dimension, BiomeID};
@@ -296,20 +439,20 @@ impl Cache<'_> {
     /// );
     ///
     /// let mut cache = generator.new_cache(Range {
-    ///     scale: 1,
+    ///     scale: Scale::Block,
     ///     x: 512,
     ///     z: -512,
-    ///     sx: 64,
-    ///     sz: 64,
+    ///     size_x: 64,
+    ///     size_z: 64,
     ///     y: 100,
-    ///     sy: 0,
+    ///     size_y: 0,
     /// });
     ///
     /// cache.fill_cache().expect("failed to fill cache");
     ///
     /// // Read the cache at z=32, x=5
     ///
-    /// assert_eq!(cache.get_cache()[(13 + cache.get_range().sx + 5) as usize], BiomeID::plains as i32);
+    /// assert_eq!(cache.get_cache()[(13 + cache.get_range().size_x + 5) as usize], BiomeID::plains as i32);
     ///
     pub fn get_cache(&self) -> &Vec<i32> {
         &self.cache
@@ -320,7 +463,7 @@ impl Cache<'_> {
     /// Gets the range this cache was generated with. Useful for
     /// if you want to read from the caches.
     ///
-    /// See example from [`self.get_cache()`] for example usage
+    /// See example from [`Self::get_cache()`] for example usage
     pub fn get_range(&self) -> &Range {
         &self.range
     }
@@ -339,10 +482,10 @@ impl Cache<'_> {
     ///
     /// This will not cause ub, but the generated biome will not represent
     /// the location which you are looking for
-    pub fn get_biome_at(&self, x: i32, y: i32, z: i32) -> Result<enums::BiomeID, GeneratorError> {
+    pub fn get_biome_at(&self, x: u32, y: u32, z: u32) -> Result<enums::BiomeID, GeneratorError> {
         let raw_biomeid = *self
             .cache
-            .get((y * self.range.sx * self.range.sz + z * self.range.sx + x) as usize)
+            .get((y * self.range.size_x * self.range.size_z + z * self.range.size_x + x) as usize)
             .ok_or(GeneratorError::IndexOutOfBound)?;
 
         enums::BiomeID::from_i32(raw_biomeid).ok_or(GeneratorError::BiomeIDOutOfRange(raw_biomeid))
