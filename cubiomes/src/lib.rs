@@ -6,6 +6,7 @@
 //!
 
 #![warn(clippy::undocumented_unsafe_blocks)]
+#![warn(missing_docs)]
 
 pub mod generator;
 

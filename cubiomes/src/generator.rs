@@ -34,7 +34,6 @@ bitflags! {
         const LargeBiomes = 0x1;
         const NoBetaOcean = 0x2;
         const ForceOceanVariants = 0x4;
-
         //the source may set any bits
         const _ = !0;
     }
