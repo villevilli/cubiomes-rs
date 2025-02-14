@@ -8,6 +8,9 @@ This repo contains:
 - cubiomes-sys, bindgen generated bindings for the original cubiomes library
 - cubiomes, a safe rust wrapper for cubiomes-sys
 
+## Documentation
+Master branch documentation available at https://villevilli.github.io/cubiomes-rs/
+
 ## Progress
 Overview of progress for the safe rust wrapper:
 - [ ] Generator
