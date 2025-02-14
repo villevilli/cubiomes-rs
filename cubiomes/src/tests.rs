@@ -5,7 +5,7 @@ use cubiomes_sys::{
     Dimension, Range,
 };
 
-use crate::generator::{self, Flags, Generator, GeneratorError, Scale};
+use crate::generator::{Flags, Generator, GeneratorError, Scale};
 
 fn init_generator() -> Generator {
     let seed: i64 = -4804349703814383506;
@@ -31,7 +31,7 @@ fn biome_to_str_sanity() {
 
 #[test]
 fn simple_biome_test() -> Result<(), GeneratorError> {
-    let mut generator = init_generator();
+    let generator = init_generator();
 
     assert_eq!(
         generator.get_biome_at(Scale::Block, 700, 256, -2300)?,
@@ -42,7 +42,7 @@ fn simple_biome_test() -> Result<(), GeneratorError> {
 
 #[test]
 fn simple_biome_test_cached() -> Result<(), GeneratorError> {
-    let mut generator = init_generator();
+    let generator = init_generator();
 
     let mut cache = generator.new_cache(Range {
         scale: 1,
@@ -54,7 +54,7 @@ fn simple_biome_test_cached() -> Result<(), GeneratorError> {
         sy: 0,
     });
 
-    cache.fill_cache();
+    cache.fill_cache().expect("Failed to fill the cache");
 
     assert_eq!(cache.get_biome_at(5, 0, 6)?, enums::BiomeID::grove);
     assert_eq!(cache.get_biome_at(63, 0, 63)?, enums::BiomeID::frozen_peaks);
