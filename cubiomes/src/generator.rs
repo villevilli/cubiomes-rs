@@ -12,10 +12,10 @@ pub enum GeneratorError {
     #[error("Biome id {0} is out of range and is not a valid biomeid")]
     BiomeIDOutOfRange(i32),
     #[error(
-        "Function getBiomeAt failed (the ffi function returned -1), did you perhaps forgot to initialize the seed?"
+        "Function getBiomeAt failed with error code -1, did you forgot to initialize the seed?"
     )]
     GetBiomeAtFailure,
-    #[error("Function genBiomes failed (the ffi function did not return 0, it returne {0})")]
+    #[error("Function genBiomes failed with error code {0}")]
     GenBiomeToCacheFailure(i32),
     #[error("Index out of bounds")]
     IndexOutOfBound,
@@ -63,9 +63,7 @@ impl Generator {
                 alloc(Layout::new::<cubiomes_sys::Generator>()) as *mut cubiomes_sys::Generator;
 
             cubiomes_sys::setupGenerator(generator, version as i32, flags.bits());
-            Self {
-                generator: generator,
-            }
+            Self { generator }
         }
     }
 
@@ -74,7 +72,7 @@ impl Generator {
     /// will result in the generation failing
     pub fn apply_seed(&mut self, dimension: Dimension, seed: i64) {
         unsafe {
-            cubiomes_sys::applySeed(self.generator, dimension.0, transmute(seed));
+            cubiomes_sys::applySeed(self.generator, dimension.0, transmute::<i64, u64>(seed));
         }
     }
 
@@ -116,19 +114,22 @@ impl Generator {
         let result_num =
             cubiomes_sys::genBiomes(self.generator, cache.cache.as_mut_ptr(), cache.range);
 
+        // If error is returned from genbiomes, dont resize the vec as it may contain garbage data
+        if result_num != 0 {
+            return Err(GeneratorError::GenBiomeToCacheFailure(result_num));
+        }
+
         //We set the caches lenght to that which the cubiome docs state it should be
         cache
             .cache
             .set_len(self.get_min_cache_size_from_range(cache.range));
 
-        if result_num != 0 {
-            return Err(GeneratorError::GenBiomeToCacheFailure(result_num));
-        }
         Ok(())
     }
 }
 
 impl<'a> Generator {
+    /// Generates a new cache for the given generator
     pub fn new_cache(&'a self, range: cubiomes_sys::Range) -> Cache<'a> {
         let cache_size = self.get_min_cache_size_from_range(range);
 
@@ -157,7 +158,6 @@ impl Cache<'_> {
             .get((y * self.range.sx * self.range.sz + z * self.range.sx + x) as usize)
             .ok_or(GeneratorError::IndexOutOfBound)?;
 
-        enums::BiomeID::from_i32(raw_biomeid)
-            .ok_or_else(|| GeneratorError::BiomeIDOutOfRange(raw_biomeid))
+        enums::BiomeID::from_i32(raw_biomeid).ok_or(GeneratorError::BiomeIDOutOfRange(raw_biomeid))
     }
 }

@@ -10,7 +10,7 @@ macro_rules! add_prefix {
     };
 }
 
-const C_OBJECTS: [&'static str; 8] = add_prefix!(
+const C_OBJECTS: [&str; 8] = add_prefix!(
     "cubiomes/",
     "noise.c",
     "biomes.c",
