@@ -9,10 +9,12 @@ env:
   # Make sure CI fails on all warnings
   RUSTFLAGS: "-Dwarnings"
 
+permissions:
+  contents: read
+  pages: write
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -26,3 +28,31 @@ jobs:
       run: cargo clippy --all-features
     - name: Run tests
       run: cargo test --verbose
+    - name: Clean docs folder
+      run: cargo clean --doc
+    - name: Build docs
+      run: cargo doc --no-deps
+    - name: Add redirect
+      if: github.ref == 'refs/heads/main'
+      run: echo '<meta http-equiv="refresh" content="0;url=aoc/index.html">' > target/doc/index.html
+    - name: Remove lock file
+      if: github.ref == 'refs/heads/main'
+      run: rm target/doc/.lock
+    - name: Upload artifact
+      if: github.ref == 'refs/heads/main'
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: target/doc
+
+  deploy:
+    name: Deploy Documentation
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
