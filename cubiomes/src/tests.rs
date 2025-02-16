@@ -38,7 +38,7 @@ fn simple_biome_test() -> Result<(), GeneratorError> {
     let generator = init_generator();
 
     assert_eq!(
-        generator.get_biome_at(Scale::Block, 700, 256, -2300)?,
+        generator.get_biome_at(700, 256, -2300)?,
         enums::BiomeID::mushroomIsland
     );
     Ok(())
