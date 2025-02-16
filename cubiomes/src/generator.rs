@@ -132,6 +132,17 @@ pub enum Scale {
     /// A scale of 1:256, half of a minecraft region
     HalfRegion = 256,
 }
+
+impl Scale {
+    pub fn scale_coord(&self, num: i32) -> i32 {
+        num / *self as i32
+    }
+
+    pub fn unscale_coord(&self, num: i32) -> i32 {
+        num * *self as i32
+    }
+}
+
 /// Size and position for a [Cache]
 ///
 /// The range represents a location and size of a cache.
@@ -188,6 +199,30 @@ impl TryFrom<Range> for cubiomes_sys::Range {
                 .try_into()
                 .map_err(|_| TryFromRangeError::YSizeOutOfBouns)?,
         })
+    }
+}
+
+impl Range {
+    pub fn is_inside_range(&self, x: i32, z: i32) -> bool {
+        ((self.x <= self.scale.scale_coord(x))
+            && (self.scale.scale_coord(x) < (self.x + self.size_x as i32)))
+            && ((self.z <= self.scale.scale_coord(z))
+                && (self.scale.scale_coord(z) < (self.z + self.size_z as i32)))
+    }
+
+    pub fn global_to_local_coord(&self, x: i32, z: i32) -> Option<(u32, u32)> {
+        if !self.is_inside_range(x, z) {
+            None
+        } else {
+            Some((
+                (self.scale.scale_coord(x) - self.x)
+                    .try_into()
+                    .expect("x should always been in range since we tested it before"),
+                (self.scale.scale_coord(z) - self.z)
+                    .try_into()
+                    .expect("z should always been in range since we tested it before"),
+            ))
+        }
     }
 }
 
@@ -332,6 +367,7 @@ impl Generator {
     }
 
     fn min_cache_size_from_range(&self, range: Range) -> usize {
+        #[allow(clippy::unwrap_used)]
         let raw_range: cubiomes_sys::Range = range.try_into().unwrap();
 
         // SAFETY:
