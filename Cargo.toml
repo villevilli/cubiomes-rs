@@ -1,8 +1,6 @@
 [workspace]
+package.repository = "https://github.com/villevilli/cubiomes-rs/"
 
-members = [
-  "cubiomes-sys",
-  "cubiomes", 
-]
+members = ["cubiomes-sys", "cubiomes"]
 
 resolver = "2"

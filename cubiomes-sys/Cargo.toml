@@ -2,6 +2,12 @@
 name = "cubiomes-sys"
 version = "0.1.0"
 edition = "2021"
+authors = ["Ville Kujala"]
+description = "Raw ff binding for the cubiomes library"
+license = "MIT"
+keywords = ["minecraft", "minecraft-worldgen"]
+categories = ["external-ffi-bindings"]
+links = "cubiomes"
 
 [features]
 default = ["cc_build"]

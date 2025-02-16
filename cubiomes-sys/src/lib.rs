@@ -1,3 +1,7 @@
+//! Raw ffi bindings to the cubiomes library.
+//!
+//! This crate also contains module [enums] for building enums for conviniance
+
 #![allow(non_upper_case_globals)]
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
@@ -12,13 +16,10 @@ extern crate num_derive;
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
-/// This module contains generated rust enums
+/// This module contains generated rust enums representing different cubiomes enums
 ///
-/// ## Safety
-/// The enums should not be used directly as outputs for ffi, as that can cause
-/// ub if cubiomes returns something that doesnt fit the enum. They are included
-/// with the assumption that the user validates cubiomes output before constructing
-/// them.
+/// The enums in this module are automatically generated from the version of cubiomes
+/// this crate links against.
 pub mod enums {
     include!(concat!(env!("OUT_DIR"), "/biome_enums.rs"));
 }
