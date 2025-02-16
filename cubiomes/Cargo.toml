@@ -2,6 +2,11 @@
 name = "cubiomes"
 version = "0.1.1"
 edition = "2021"
+authors = ["Ville Kujala"]
+description = "A safe rust wrapper for the cubiome library"
+license = "MIT"
+keywords = ["minecraft", "minecraft-worldgen"]
+categories = ["api-bindings"]
 
 [features]
 default = ["cc_build"]

@@ -1,6 +1,6 @@
 //! A safe wrapper for the cubiomes library
 //!
-//! This crate provides safe bindings for [`cubiomes`]: https://github.com/Cubitect/cubiomes by cubitect.
+//! This crate provides safe bindings for [cubiomes](https://github.com/Cubitect/cubiomes) by cubitect.
 //!
 //! The crate is organized into different modules which loosely correspond to features
 //! available in cubiomes. The crate is still incomplete, as it doesn't provide all features
@@ -14,6 +14,8 @@
 
 #![warn(clippy::undocumented_unsafe_blocks)]
 #![warn(missing_docs)]
+#![warn(missing_copy_implementations)]
+#![warn(missing_debug_implementations)]
 
 pub mod generator;
 
