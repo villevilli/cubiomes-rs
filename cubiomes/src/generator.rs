@@ -134,10 +134,16 @@ pub enum Scale {
 }
 
 impl Scale {
+    /// Scales a number according to this scale
+    ///
+    /// Divides the input number by the scale
     pub fn scale_coord(&self, num: i32) -> i32 {
         num / *self as i32
     }
 
+    /// Reverses scaling done with this scale
+    ///
+    /// Multiplies the input number with this scale
     pub fn unscale_coord(&self, num: i32) -> i32 {
         num * *self as i32
     }
@@ -203,15 +209,23 @@ impl TryFrom<Range> for cubiomes_sys::Range {
 }
 
 impl Range {
-    pub fn is_inside_range(&self, x: i32, z: i32) -> bool {
+    /// Checks if a given minecraft coordinate is within this range.
+    ///
+    /// First scales and then checks if a given coordinate is within this range.
+    pub fn is_inside(&self, x: i32, z: i32) -> bool {
         ((self.x <= self.scale.scale_coord(x))
             && (self.scale.scale_coord(x) < (self.x + self.size_x as i32)))
             && ((self.z <= self.scale.scale_coord(z))
                 && (self.scale.scale_coord(z) < (self.z + self.size_z as i32)))
     }
 
+    /// Tries to calculate a coordinate relative to this range.
+    ///
+    /// Tries to turn a global minecraft coordinate, to one inside this cache.
+    ///
+    /// Returns none if the coordinate is outside this cache
     pub fn global_to_local_coord(&self, x: i32, z: i32) -> Option<(u32, u32)> {
-        if !self.is_inside_range(x, z) {
+        if !self.is_inside(x, z) {
             None
         } else {
             Some((

@@ -82,18 +82,18 @@ const SOME_RANGE: Range = Range {
 #[test]
 fn test_range_in_bounds() {
     let range = Range { ..SOME_RANGE };
-    assert!(range.is_inside_range(23, 14));
+    assert!(range.is_inside(23, 14));
 }
 
 #[test]
 fn test_range_border_in_bounds() {
     let range = Range { ..SOME_RANGE };
-    assert!(range.is_inside_range(31, 31));
+    assert!(range.is_inside(31, 31));
 }
 
 #[test]
 #[should_panic]
 fn test_range_outside_bounds() {
     let range = Range { ..SOME_RANGE };
-    assert!(range.is_inside_range(32, 32))
+    assert!(range.is_inside(32, 32))
 }
