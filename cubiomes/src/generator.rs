@@ -13,7 +13,7 @@
 //!
 //! For the y value in generation you should generally use minecraft build limit for surface biomes in the overworld.
 //! (either 320 for post 1.18, or 255 for pre 1.18)
-//! Note that this isn't exhaustive, please check the (minecraft wiki)[https://minecraft.wiki/w/Altitude#History]
+//! Note that this isn't exhaustive, please check the [minecraft wiki](https://minecraft.wiki/w/Altitude#History)
 //! for an exhaustive list of changes in worldheight.
 //!
 //!
