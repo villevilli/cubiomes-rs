@@ -13,6 +13,6 @@ Master branch documentation available at https://villevilli.github.io/cubiomes-r
 
 ## Progress
 Overview of progress for the safe rust wrapper:
-- [ ] Generator
+- [x] Generator
 - [ ] Finders
 - [ ] Quadbase
