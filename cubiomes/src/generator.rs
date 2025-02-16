@@ -430,7 +430,7 @@ impl Generator {
     unsafe fn generate_biomes_to_cache(&self, cache: &mut Cache) -> Result<(), GeneratorError> {
         let result_num = cubiomes_sys::genBiomes(
             self.generator,
-            cache.cache.as_mut_ptr(),
+            cache.buffer.as_mut_ptr(),
             cache.range.try_into()?,
         );
 
@@ -442,7 +442,9 @@ impl Generator {
         // We set the caches lenght to what an user would want to read from it as we
         // can't be sure if cubiomes has actually initialized all variables beyond
         // the readable area.
-        cache.cache.set_len(cache.calculate_readable_cache_length());
+        cache
+            .buffer
+            .set_len(cache.calculate_readable_cache_length());
 
         Ok(())
     }
@@ -458,7 +460,7 @@ impl<'a> Generator {
         let cache = Vec::with_capacity(cache_size);
 
         Cache {
-            cache,
+            buffer: cache,
             range,
             generator: self,
         }
@@ -471,7 +473,7 @@ impl<'a> Generator {
 /// and holds a vector filled with biome data.
 #[derive(Clone)]
 pub struct Cache<'a> {
-    cache: Vec<i32>,
+    buffer: Vec<i32>,
     range: Range,
     generator: &'a Generator,
 }
@@ -483,7 +485,7 @@ impl Debug for Cache<'_> {
         writeln!(f, "Range: {:?}", &self.range)?;
         writeln!(f, "Cache: ")?;
 
-        for line in self.cache.chunks(self.range.size_x as usize) {
+        for line in self.buffer.chunks(self.range.size_x as usize) {
             writeln!(f, "{:?}", line)?
         }
         Ok(())
@@ -535,10 +537,10 @@ impl Cache<'_> {
     ///
     /// // Read the cache at z=32, x=5
     ///
-    /// assert_eq!(cache.get_cache()[(13 + cache.get_range().size_x + 5) as usize], BiomeID::plains as i32);
+    /// assert_eq!(cache.buffer()[(13 + cache.range().size_x + 5) as usize], BiomeID::plains as i32);
     ///
-    pub fn cache(&self) -> &Vec<i32> {
-        &self.cache
+    pub fn buffer(&self) -> &Vec<i32> {
+        &self.buffer
     }
 
     /// Gets a reference to the range used by this cache
@@ -561,7 +563,7 @@ impl Cache<'_> {
     /// on a cache with a size of 16 will be out of bounds.
     pub fn biome_at(&self, x: u32, y: u32, z: u32) -> Result<enums::BiomeID, GeneratorError> {
         let raw_biomeid = *self
-            .cache
+            .buffer
             .get((y * self.range.size_x * self.range.size_z + z * self.range.size_x + x) as usize)
             .ok_or(GeneratorError::IndexOutOfBounds)?;
 
