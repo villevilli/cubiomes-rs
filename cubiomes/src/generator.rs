@@ -9,6 +9,15 @@
 //!
 //! For more complicated usage, use a [Cache] generated with [Generator::new_cache()]
 //!
+//! ## Optimal height
+//!
+//! For the y value in generation you should generally use minecraft build limit for surface biomes in the overworld.
+//! (either 320 for post 1.18, or 255 for pre 1.18)
+//! Note that this isn't exhaustive, please check the (minecraft wiki)[https://minecraft.wiki/w/Altitude#History]
+//! for an exhaustive list of changes in worldheight.
+//!
+//!
+//!
 //! # Detail
 //!
 //! This module follow closely to how the underlying cubiomes library works, but the
@@ -528,17 +537,17 @@ impl Cache<'_> {
     ///
     /// assert_eq!(cache.get_cache()[(13 + cache.get_range().size_x + 5) as usize], BiomeID::plains as i32);
     ///
-    pub fn get_cache(&self) -> &Vec<i32> {
+    pub fn cache(&self) -> &Vec<i32> {
         &self.cache
     }
 
-    /// Gets a read-only reference to the range used by this cache
+    /// Gets a reference to the range used by this cache
     ///
     /// Gets the range this cache was generated with. Useful for
     /// if you want to read from the caches.
     ///
     /// See example from [`Self::get_cache()`] for example usage
-    pub fn get_range(&self) -> &Range {
+    pub fn range(&self) -> &Range {
         &self.range
     }
 
@@ -550,7 +559,7 @@ impl Cache<'_> {
     /// The cache start from x:0 y:0 mapping to the 0,0 of the range it
     /// was generated with. This means that attempting to read x: 16 or y:16
     /// on a cache with a size of 16 will be out of bounds.
-    pub fn get_biome_at(&self, x: u32, y: u32, z: u32) -> Result<enums::BiomeID, GeneratorError> {
+    pub fn biome_at(&self, x: u32, y: u32, z: u32) -> Result<enums::BiomeID, GeneratorError> {
         let raw_biomeid = *self
             .cache
             .get((y * self.range.size_x * self.range.size_z + z * self.range.size_x + x) as usize)
@@ -559,7 +568,7 @@ impl Cache<'_> {
         enums::BiomeID::from_i32(raw_biomeid).ok_or(GeneratorError::BiomeIDOutOfRange(raw_biomeid))
     }
 
-    /// Moves the cache without reallocating the space
+    /// Moves the cache to new position x,y,z without reallocating the space
     ///
     /// Moves the cache to the new position without allocation.
     /// Can be used to generate multiple positions without reallocation.

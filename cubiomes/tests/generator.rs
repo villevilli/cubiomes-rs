@@ -43,26 +43,21 @@ fn test_random_points() {
         });
 
         let mut cache = generator.new_cache(Range { x, z, ..BASE_RANGE });
-        cache.fill_cache().unwrap_or_else(|_| {
-            panic!(
-                "Failed to generate cache for range: {:?}",
-                cache.get_range()
-            )
-        });
+        cache
+            .fill_cache()
+            .unwrap_or_else(|_| panic!("Failed to generate cache for range: {:?}", cache.range()));
 
-        let (scaled_x, scaled_z) = cache.get_range().global_to_local_coord(x, z).unwrap();
+        let (scaled_x, scaled_z) = cache.range().global_to_local_coord(x, z).unwrap();
 
         dbg!(&scaled_x);
         dbg!(&scaled_z);
 
-        let biome_get_from_cache = cache
-            .get_biome_at(scaled_x, 0, scaled_z)
-            .unwrap_or_else(|_| {
-                panic!(
-                    "Failed to get biome from cache at x: {}, y: {} z: {}",
-                    x, TEST_Y, z
-                )
-            });
+        let biome_get_from_cache = cache.biome_at(scaled_x, 0, scaled_z).unwrap_or_else(|_| {
+            panic!(
+                "Failed to get biome from cache at x: {}, y: {} z: {}",
+                x, TEST_Y, z
+            )
+        });
 
         assert_eq!(biome_get_biome_at, biome_get_from_cache)
     }

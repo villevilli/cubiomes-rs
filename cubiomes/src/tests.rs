@@ -63,8 +63,8 @@ fn simple_biome_test_cached() -> Result<(), GeneratorError> {
 
     dbg!(&cache);
 
-    assert_eq!(cache.get_biome_at(5, 0, 6)?, enums::BiomeID::meadow);
-    assert_eq!(cache.get_biome_at(15, 0, 15)?, enums::BiomeID::snowy_slopes);
+    assert_eq!(cache.biome_at(5, 0, 6)?, enums::BiomeID::meadow);
+    assert_eq!(cache.biome_at(15, 0, 15)?, enums::BiomeID::snowy_slopes);
 
     Ok(())
 }
