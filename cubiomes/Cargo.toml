@@ -17,3 +17,6 @@ cc_build = ["cubiomes-sys/cc_build"]
 thiserror = "2.0"
 bitflags = "2.0"
 cubiomes-sys = { path = "../cubiomes-sys", version = "0.1.0", default-features = false }
+
+[dev-dependencies]
+rand = "0.9.0"

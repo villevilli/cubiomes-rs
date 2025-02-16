@@ -68,3 +68,32 @@ fn simple_biome_test_cached() -> Result<(), GeneratorError> {
 
     Ok(())
 }
+
+const SOME_RANGE: Range = Range {
+    scale: Scale::Block,
+    x: 0,
+    z: 0,
+    size_x: 32,
+    size_z: 32,
+    y: 320,
+    size_y: 0,
+};
+
+#[test]
+fn test_range_in_bounds() {
+    let range = Range { ..SOME_RANGE };
+    assert!(range.is_inside_range(23, 14));
+}
+
+#[test]
+fn test_range_border_in_bounds() {
+    let range = Range { ..SOME_RANGE };
+    assert!(range.is_inside_range(31, 31));
+}
+
+#[test]
+#[should_panic]
+fn test_range_outside_bounds() {
+    let range = Range { ..SOME_RANGE };
+    assert!(range.is_inside_range(32, 32))
+}
