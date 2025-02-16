@@ -8,6 +8,7 @@ license = "MIT"
 keywords = ["minecraft", "minecraft-worldgen"]
 categories = ["external-ffi-bindings"]
 links = "cubiomes"
+readme = "README.md"
 
 [features]
 default = ["cc_build"]
