@@ -7,7 +7,7 @@ The original cubiomes library is available here: https://github.com/cubitect/cub
 use cargo to install cubiomes
 ``cargo add cubiomes``
 
-
+## Contributing
 The currently the library only supports biome generation, but support for at least structure
 generation is planned. Feel free to submit issues or pull requests for the project.
 
