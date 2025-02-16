@@ -9,6 +9,7 @@ keywords = ["minecraft", "minecraft-worldgen"]
 categories = ["external-ffi-bindings"]
 links = "cubiomes"
 readme = "README.md"
+repository = "https://github.com/villevilli/cubiomes-rs/"
 
 [features]
 default = ["cc_build"]
