@@ -9,6 +9,9 @@ The project follows semver
 ### Added
 
 - Changelog.md
+- MinecraftCoordinates
+- Structure generation to generator
+- StructureRegionCoordinates for help with structure generation
 
 ### Changed
 

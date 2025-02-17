@@ -40,7 +40,11 @@ struct DeriveMacros(Vec<String>);
 
 impl bindgen::callbacks::ParseCallbacks for DeriveMacros {
     fn add_derives(&self, _info: &bindgen::callbacks::DeriveInfo<'_>) -> Vec<String> {
-        self.0.clone()
+        match _info.kind {
+            bindgen::callbacks::TypeKind::Struct => Vec::new(),
+            bindgen::callbacks::TypeKind::Enum => self.0.clone(),
+            bindgen::callbacks::TypeKind::Union => Vec::new(),
+        }
     }
 }
 
@@ -76,12 +80,13 @@ fn main() {
 
     // Generates rustified enums for use in a wrapper library
     let biome_enum_bindings = bindgen::Builder::default()
-        .header("cubiomes/biomes.h")
+        .header("enum_wrapper.h")
         .parse_callbacks(Box::new(DeriveMacros(vec![
             "FromPrimitive".into(),
             "ToPrimitive".into(),
         ])))
         .blocklist_function(".*") //Blocks all functions, as we are only intrested in the enums
+        .allowlist_type(["BiomeID", "Dimension", "MCVersion", "StructureType"].join("|"))
         .rustified_non_exhaustive_enum(".*")
         .generate()
         .expect("Unable to generate rustified enums for cubiomes");

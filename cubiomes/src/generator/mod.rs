@@ -9,6 +9,9 @@
 //!
 //! For more complicated usage, use a [Cache] generated with [Generator::new_cache()]
 //!
+//! For structure generation, use a [structures::StructureGenerator] which can be generated with
+//! [Generator::new_structure_generator()]
+//!
 //! ## Optimal height
 //!
 //! For the y value in generation you should generally use minecraft build limit for surface biomes in the overworld.
@@ -22,6 +25,9 @@
 //!
 //! This module follow closely to how the underlying cubiomes library works, but the
 //! features have been wrapped by a safe rust api
+
+pub mod position;
+pub mod structures;
 
 use std::{
     alloc::{alloc, dealloc, Layout},
@@ -143,7 +149,7 @@ pub enum Scale {
 }
 
 impl Scale {
-    /// Scales a number according to this scale
+    /// Scales a block coordinate according to this scale
     ///
     /// Divides the input number by the scale
     pub fn scale_coord(&self, num: i32) -> i32 {
@@ -151,6 +157,8 @@ impl Scale {
     }
 
     /// Reverses scaling done with this scale
+    ///
+    /// Turns whatever number is at this scale back to block coordinates
     ///
     /// Multiplies the input number with this scale
     pub fn unscale_coord(&self, num: i32) -> i32 {
@@ -387,6 +395,21 @@ impl Generator {
                 n => FromPrimitive::from_i32(n).ok_or(GeneratorError::BiomeIDOutOfRange(n)),
             }
         }
+    }
+
+    pub fn seed(&self) -> i64 {
+        // SAFETY:
+        // The generator pointer can't be null as its been initialized
+        // when constructing this struct
+        unsafe { transmute((*self.generator).seed) }
+    }
+
+    pub fn minecraft_version(&self) -> enums::MCVersion {
+        // SAFETY:
+        // The generator pointer can't be null as its been initialized
+        // when constructing this struct
+        enums::MCVersion::from_i32(unsafe { *self.generator }.mc)
+            .expect("Cubiomes generator has an invalid mc version")
     }
 
     fn min_cache_size_from_range(&self, range: Range) -> usize {
