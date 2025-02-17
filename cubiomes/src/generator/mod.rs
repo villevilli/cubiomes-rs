@@ -29,6 +29,9 @@
 pub mod position;
 pub mod structures;
 
+#[cfg(test)]
+mod tests;
+
 use std::{
     alloc::{alloc, dealloc, Layout},
     fmt::Debug,
