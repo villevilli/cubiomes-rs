@@ -2,7 +2,7 @@ use std::mem::MaybeUninit;
 
 use cubiomes_sys::{enums, Pos};
 
-use super::Scale;
+use super::{structures::StructureGenerationError, Scale};
 
 ///A 2d position inside minecraft
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -51,28 +51,44 @@ pub struct StructureRegionPosition {
 
 impl StructureRegionPosition {
     pub fn new(
-        x: i32,
-        z: i32,
+        pos: MinecraftPosition,
         minecraft_version: enums::MCVersion,
         structure_type: enums::StructureType,
-    ) -> Self {
-        Self {
-            x,
-            z,
+    ) -> Result<Self, StructureGenerationError> {
+        let scale = get_structure_scale(pos, structure_type, minecraft_version);
+
+        Ok(Self {
+            x: pos.x / scale? as i32,
+            z: pos.z / scale? as i32,
             minecraft_version,
             structure_type,
-        }
+        })
     }
 
-    fn region_size(&self) -> i32 {
-        unsafe {
-            let mut sconf: MaybeUninit<cubiomes_sys::StructureConfig> = MaybeUninit::uninit();
+    pub fn set_new_minecraft_pos(&self, pos: MinecraftPosition) {
+        todo!()
+    }
 
-            cubiomes_sys::getStructureConfig(
-                self.structure_type as i32,
-                self.minecraft_version as i32,
-                sconf.as_mut_ptr(),
-            )
+    fn region_size(&self) -> i8 {
+        todo!()
+    }
+}
+
+fn get_structure_scale(
+    pos: MinecraftPosition,
+    structure_type: enums::StructureType,
+    minecraft_version: enums::MCVersion,
+) -> Result<i8, StructureGenerationError> {
+    unsafe {
+        let mut sconf: MaybeUninit<cubiomes_sys::StructureConfig> = MaybeUninit::uninit();
+
+        match cubiomes_sys::getStructureConfig(
+            structure_type as i32,
+            minecraft_version as i32,
+            sconf.as_mut_ptr(),
+        ) {
+            0 => Err(StructureGenerationError::CubiomesError),
+            _ => Ok(sconf.assume_init().regionSize as i8),
         }
     }
 }
