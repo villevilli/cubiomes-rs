@@ -10,6 +10,10 @@ The project follows semver
 
 - Changelog.md
 
+### Changed
+
+- renamed Generator.buffer() -> Generator.as_vec()
+
 ## [0.1.3] - 2024-02-17
 
 ### Fixed
