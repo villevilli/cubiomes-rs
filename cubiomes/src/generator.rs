@@ -537,9 +537,9 @@ impl Cache<'_> {
     ///
     /// // Read the cache at z=32, x=5
     ///
-    /// assert_eq!(cache.buffer()[(13 + cache.range().size_x + 5) as usize], BiomeID::plains as i32);
+    /// assert_eq!(cache.as_vec()[(13 + cache.range().size_x + 5) as usize], BiomeID::plains as i32);
     ///
-    pub fn buffer(&self) -> &Vec<i32> {
+    pub fn as_vec(&self) -> &Vec<i32> {
         &self.buffer
     }
 
