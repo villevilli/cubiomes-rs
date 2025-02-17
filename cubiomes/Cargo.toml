@@ -8,7 +8,7 @@ license = "MIT"
 keywords = ["minecraft", "minecraft-worldgen"]
 categories = ["api-bindings"]
 readme = "README.md"
-package.repository = "https://github.com/villevilli/cubiomes-rs/"
+repository = "https://github.com/villevilli/cubiomes-rs/"
 
 [features]
 default = ["cc_build"]
