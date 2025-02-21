@@ -1,7 +1,4 @@
-use super::{
-    position::{BlockPosition, StructureRegionPosition},
-    Generator,
-};
+use super::{position::BlockPosition, structures::StructureRegion, Generator};
 use crate::enums::*;
 
 #[test]
@@ -11,7 +8,7 @@ fn no_structure_found() {
     let minecraft_version = MCVersion::MC_1_17_1;
     let structure_type = StructureType::Jungle_Temple;
 
-    let pos = StructureRegionPosition::from_block_position(
+    let pos = StructureRegion::from_block_position(
         BlockPosition::new(1923, 1020),
         minecraft_version,
         structure_type,
@@ -35,7 +32,7 @@ fn test_structure_generation() {
     let minecraft_version = MCVersion::MC_1_21_WD;
     let structure_type = StructureType::Outpost;
 
-    let pos = StructureRegionPosition::from_block_position(
+    let pos = StructureRegion::from_block_position(
         BlockPosition::new(3888, 2656),
         minecraft_version,
         structure_type,
@@ -62,7 +59,7 @@ fn test_structure_generation_negative() {
     let minecraft_version = MCVersion::MC_1_21_WD;
     let structure_type = StructureType::Igloo;
 
-    let pos = StructureRegionPosition::from_block_position(
+    let pos = StructureRegion::from_block_position(
         BlockPosition::new(-354, -1808),
         minecraft_version,
         structure_type,
