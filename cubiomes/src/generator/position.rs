@@ -30,6 +30,13 @@ impl MinecraftPosition {
     pub fn as_scaled(&self, scale: Scale) -> (i32, i32) {
         (scale.scale_coord(self.x), scale.scale_coord(self.z))
     }
+
+    /// Scales the position down by a given number
+    ///
+    /// Internally divides both axis by scale
+    pub fn scale_by_num(&self, scale: i32) -> (i32, i32) {
+        (self.x.div_euclid(scale), self.z.div_euclid(scale))
+    }
 }
 
 impl From<Pos> for MinecraftPosition {
@@ -45,6 +52,7 @@ impl From<Pos> for MinecraftPosition {
 pub struct StructureRegionPosition {
     pub x: i32,
     pub z: i32,
+    region_scale: i8,
     pub(crate) minecraft_version: enums::MCVersion,
     pub(crate) structure_type: enums::StructureType,
 }
@@ -55,30 +63,29 @@ impl StructureRegionPosition {
         minecraft_version: enums::MCVersion,
         structure_type: enums::StructureType,
     ) -> Result<Self, StructureGenerationError> {
-        let scale = get_structure_scale(pos, structure_type, minecraft_version);
+        let region_scale = get_structure_scale(structure_type, minecraft_version)?;
+
+        let (x, z) = pos.scale_by_num((region_scale as i32) * 16);
 
         Ok(Self {
-            x: pos.x / scale? as i32,
-            z: pos.z / scale? as i32,
+            x,
+            z,
+            region_scale,
             minecraft_version,
             structure_type,
         })
     }
 
-    pub fn set_new_minecraft_pos(&self, pos: MinecraftPosition) {
-        todo!()
-    }
-
-    fn region_size(&self) -> i8 {
-        todo!()
+    pub fn set_new_minecraft_pos(&mut self, pos: MinecraftPosition) {
+        (self.x, self.z) = pos.scale_by_num(self.region_scale as i32);
     }
 }
 
 fn get_structure_scale(
-    pos: MinecraftPosition,
     structure_type: enums::StructureType,
     minecraft_version: enums::MCVersion,
 ) -> Result<i8, StructureGenerationError> {
+    // SAFETY: sconf is initialized if GetStructureConfig did not return 0
     unsafe {
         let mut sconf: MaybeUninit<cubiomes_sys::StructureConfig> = MaybeUninit::uninit();
 
@@ -88,7 +95,7 @@ fn get_structure_scale(
             sconf.as_mut_ptr(),
         ) {
             0 => Err(StructureGenerationError::CubiomesError),
-            _ => Ok(sconf.assume_init().regionSize as i8),
+            _ => Ok(dbg!(sconf.assume_init()).regionSize as i8),
         }
     }
 }

@@ -427,6 +427,10 @@ impl Generator {
         }
     }
 
+    fn seed_for_cubiomes(&self) -> u64 {
+        unsafe { transmute::<i64, u64>(self.seed()) }
+    }
+
     /// Gets the minimum cache size for a specific sized range
     ///
     /// y can be either 0 or 1 for a plane

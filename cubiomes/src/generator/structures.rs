@@ -1,7 +1,7 @@
 use std::mem::{transmute, MaybeUninit};
 
 use bitflags::bitflags;
-use cubiomes_sys::enums::StructureType;
+use cubiomes_sys::{enums::StructureType, Pos};
 use thiserror::Error;
 
 use super::{
@@ -26,6 +26,8 @@ impl Generator {
     ) -> Option<MinecraftPosition> {
         let pos = self.get_structure_generation_attempt(region_pos)?;
 
+        dbg!(pos);
+
         if self
             .verify_structure_generation_attempt(
                 pos,
@@ -45,7 +47,6 @@ impl Generator {
         region_pos: StructureRegionPosition,
     ) -> Option<MinecraftPosition> {
         let minecraft_version: cubiomes_sys::enums::MCVersion = self.minecraft_version();
-        let seed = self.seed();
 
         let mut pos: MaybeUninit<cubiomes_sys::Pos> = MaybeUninit::uninit();
 
@@ -58,7 +59,7 @@ impl Generator {
             cubiomes_sys::getStructurePos(
                 region_pos.structure_type as i32,
                 minecraft_version as i32,
-                transmute::<i64, u64>(seed),
+                self.seed_for_cubiomes(),
                 region_pos.x,
                 region_pos.z,
                 pos.as_mut_ptr(),
@@ -80,6 +81,7 @@ impl Generator {
         structure_type: StructureType,
         flags: StructureFlags,
     ) -> Result<bool, StructureGenerationError> {
+        // SAFETY: The foreign function is being called properly
         match unsafe {
             cubiomes_sys::isViableStructurePos(
                 structure_type as i32,
@@ -93,9 +95,5 @@ impl Generator {
             1 => Ok(true),
             _ => Err(StructureGenerationError::CubiomesError),
         }
-    }
-
-    pub fn try_get_structure_in_region(&self, pos: MinecraftPosition) -> MinecraftPosition {
-        todo!()
     }
 }
