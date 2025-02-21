@@ -5,7 +5,7 @@ use cubiomes_sys::{enums::StructureType, Pos};
 use thiserror::Error;
 
 use super::{
-    position::{MinecraftPosition, StructureRegionPosition},
+    position::{BlockPosition, StructureRegionPosition},
     Generator,
 };
 
@@ -23,7 +23,7 @@ impl Generator {
     pub fn try_generate_structure_in_region(
         &self,
         region_pos: StructureRegionPosition,
-    ) -> Option<MinecraftPosition> {
+    ) -> Option<BlockPosition> {
         let pos = self.get_structure_generation_attempt(region_pos)?;
 
         dbg!(pos);
@@ -45,7 +45,7 @@ impl Generator {
     pub fn get_structure_generation_attempt(
         &self,
         region_pos: StructureRegionPosition,
-    ) -> Option<MinecraftPosition> {
+    ) -> Option<BlockPosition> {
         let minecraft_version: cubiomes_sys::enums::MCVersion = self.minecraft_version();
 
         let mut pos: MaybeUninit<cubiomes_sys::Pos> = MaybeUninit::uninit();
@@ -77,7 +77,7 @@ impl Generator {
 
     fn verify_structure_generation_attempt(
         &self,
-        pos: MinecraftPosition,
+        pos: BlockPosition,
         structure_type: StructureType,
         flags: StructureFlags,
     ) -> Result<bool, StructureGenerationError> {
