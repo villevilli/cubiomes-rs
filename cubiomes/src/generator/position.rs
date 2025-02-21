@@ -6,12 +6,12 @@ use super::{structures::StructureGenerationError, Scale};
 
 ///A 2d position inside minecraft
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct MinecraftPosition {
+pub struct BlockPosition {
     pub x: i32,
     pub z: i32,
 }
 
-impl MinecraftPosition {
+impl BlockPosition {
     /// Creates a new instance of a minecraft position at block scale
     pub fn new(x: i32, z: i32) -> Self {
         Self { x, z }
@@ -39,7 +39,7 @@ impl MinecraftPosition {
     }
 }
 
-impl From<Pos> for MinecraftPosition {
+impl From<Pos> for BlockPosition {
     fn from(value: Pos) -> Self {
         Self {
             x: value.x,
@@ -59,7 +59,7 @@ pub struct StructureRegionPosition {
 
 impl StructureRegionPosition {
     pub fn new(
-        pos: MinecraftPosition,
+        pos: BlockPosition,
         minecraft_version: enums::MCVersion,
         structure_type: enums::StructureType,
     ) -> Result<Self, StructureGenerationError> {
@@ -76,7 +76,7 @@ impl StructureRegionPosition {
         })
     }
 
-    pub fn set_new_minecraft_pos(&mut self, pos: MinecraftPosition) {
+    pub fn set_new_minecraft_pos(&mut self, pos: BlockPosition) {
         (self.x, self.z) = pos.scale_by_num(self.region_scale as i32);
     }
 }
