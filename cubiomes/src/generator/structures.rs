@@ -1,7 +1,7 @@
 use std::mem::{transmute, MaybeUninit};
 
 use bitflags::bitflags;
-use cubiomes_sys::{enums::StructureType, Pos};
+use cubiomes_sys::enums::{self, StructureType};
 use thiserror::Error;
 
 use super::{
@@ -18,6 +18,40 @@ pub enum StructureGenerationError {
 // This is empty, since I dont know what flags cubiomes supports
 // I could not find them in the documentation
 bitflags! {struct StructureFlags: u32{}}
+
+pub fn get_structure_generation_attempt(
+    mc_version: enums::MCVersion,
+    seed: i64,
+    region_pos: StructureRegionPosition,
+) -> Option<BlockPosition> {
+    let minecraft_version: cubiomes_sys::enums::MCVersion = mc_version;
+
+    let mut pos: MaybeUninit<cubiomes_sys::Pos> = MaybeUninit::uninit();
+
+    // SAFETY:
+    // The ffi function receives correct input data
+    //
+    // The seed is transmuted as cubiomes wants it as u64
+    // even though minecraft uses signed integers
+    if unsafe {
+        cubiomes_sys::getStructurePos(
+            region_pos.structure_type as i32,
+            minecraft_version as i32,
+            transmute::<i64, u64>(seed),
+            region_pos.x,
+            region_pos.z,
+            pos.as_mut_ptr(),
+        )
+    } == 0
+    {
+        return None;
+    }
+
+    // SAFETY:
+    // as getStructurePos did not return 0 pos should be
+    // initialized by cubiomes
+    Some(unsafe { pos.assume_init() }.into())
+}
 
 impl Generator {
     pub fn try_generate_structure_in_region(
@@ -47,32 +81,9 @@ impl Generator {
         region_pos: StructureRegionPosition,
     ) -> Option<BlockPosition> {
         let minecraft_version: cubiomes_sys::enums::MCVersion = self.minecraft_version();
+        let seed = self.seed();
 
-        let mut pos: MaybeUninit<cubiomes_sys::Pos> = MaybeUninit::uninit();
-
-        // SAFETY:
-        // The ffi function receives correct input data
-        //
-        // The seed is transmuted as cubiomes wants it as u64
-        // even though minecraft uses signed integers
-        if unsafe {
-            cubiomes_sys::getStructurePos(
-                region_pos.structure_type as i32,
-                minecraft_version as i32,
-                self.seed_for_cubiomes(),
-                region_pos.x,
-                region_pos.z,
-                pos.as_mut_ptr(),
-            )
-        } == 0
-        {
-            return None;
-        }
-
-        // SAFETY:
-        // as getStructurePos did not return 0 pos should be
-        // initialized by cubiomes
-        Some(unsafe { pos.assume_init() }.into())
+        get_structure_generation_attempt(minecraft_version, seed, region_pos)
     }
 
     fn verify_structure_generation_attempt(
