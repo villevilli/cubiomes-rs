@@ -8,10 +8,10 @@ The project follows semver
 
 ### Added
 
-- Changelog.md
-- MinecraftCoordinates
+- Changelog.md for tracking changes
+- MinecraftCoordinates to represent x and z position inside a minecraft world
 - Structure generation to generator
-- StructureRegionCoordinates for help with structure generation
+- StructureRegion for help with structure generation
 
 ### Changed
 

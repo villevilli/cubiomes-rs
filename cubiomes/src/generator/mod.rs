@@ -400,6 +400,7 @@ impl Generator {
         }
     }
 
+    /// Gets the seed of [self]
     pub fn seed(&self) -> i64 {
         // SAFETY:
         // The generator pointer can't be null as its been initialized
@@ -407,6 +408,7 @@ impl Generator {
         unsafe { transmute((*self.generator).seed) }
     }
 
+    /// Gets the minecraft version of [self]
     pub fn minecraft_version(&self) -> enums::MCVersion {
         // SAFETY:
         // The generator pointer can't be null as its been initialized
@@ -428,6 +430,7 @@ impl Generator {
     }
 
     fn seed_for_cubiomes(&self) -> u64 {
+        // SAFETY: transmuting primitivies of the same size does not cause ub
         unsafe { transmute::<i64, u64>(self.seed()) }
     }
 
