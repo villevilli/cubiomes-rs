@@ -59,12 +59,30 @@ pub struct StructureRegionPosition {
 
 impl StructureRegionPosition {
     pub fn new(
+        region_x: i32,
+        region_z: i32,
+        minecraft_version: enums::MCVersion,
+        structure_type: enums::StructureType,
+    ) -> Result<Self, StructureGenerationError> {
+        let region_scale = get_structure_scale(structure_type, minecraft_version)?;
+
+        Ok(Self {
+            x: region_x,
+            z: region_z,
+            region_scale,
+            minecraft_version,
+            structure_type,
+        })
+    }
+
+    pub fn from_block_position(
         pos: BlockPosition,
         minecraft_version: enums::MCVersion,
         structure_type: enums::StructureType,
     ) -> Result<Self, StructureGenerationError> {
         let region_scale = get_structure_scale(structure_type, minecraft_version)?;
 
+        // Multiply the scale by 16 since structure positions are in chunk size for some reason
         let (x, z) = pos.scale_by_num((region_scale as i32) * 16);
 
         Ok(Self {
