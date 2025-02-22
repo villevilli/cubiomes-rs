@@ -4,8 +4,11 @@
 //! for these types of structures, see [StructureRegion]
 //!
 //! Notably, stronghold generation differs, following an iterative
-//! method instead. For generating the strongholdpositions, see
-//! [StrongholdIterator]
+//! method. For generating positions of strongholds, see
+//! [Strongholds] and [crate::generator::Generator::strongholds()]
+
+#[cfg(test)]
+mod test;
 
 use std::mem::{transmute, MaybeUninit};
 
@@ -272,4 +275,75 @@ fn get_structure_scale(
     }
 }
 
-pub struct StrongholdIterator;
+/// An iterator over the strongholds in a [Generator]
+///
+/// As the strongholds in minecraft are generated iteratively,
+/// we use an iterator for generating them.
+///
+/// The iterator produces the [BlockPosition] of the next stronghold
+/// until all strongholds are generated.
+///
+/// # Examples
+/// ```
+#[doc = include_str!("../../examples/generate_strongholds.rs")]
+/// ```
+#[derive(Debug)]
+pub struct Strongholds<'a> {
+    generator: &'a Generator,
+    inner: cubiomes_sys::StrongholdIter,
+    strongholds_left: usize,
+}
+
+impl<'a> Generator {
+    /// Constructs an iterator over the strongholds in this generator
+    ///
+    /// Constructs a new [Strongholds] from [self]. See [Strongholds]
+    /// for usage
+    pub fn strongholds(&'a self) -> Strongholds<'a> {
+        let mut sh_iter: MaybeUninit<cubiomes_sys::StrongholdIter> = MaybeUninit::uninit();
+
+        // SAFETY: ffi function is called correctly
+        unsafe {
+            cubiomes_sys::initFirstStronghold(
+                sh_iter.as_mut_ptr(),
+                self.minecraft_version() as i32,
+                transmute::<i64, u64>(self.seed()),
+            );
+        }
+
+        // We subtract one since cubiomes strongholds left is weird like that
+        let strongholds_left =
+            // SAFETY: ffi function is called correctly
+            unsafe { cubiomes_sys::nextStronghold(sh_iter.as_mut_ptr(), self.as_ptr()) } as usize
+                - 1;
+
+        Strongholds {
+            generator: self,
+            // SAFETY: sh_iter was initialized by ffi
+            inner: unsafe { sh_iter.assume_init() },
+            strongholds_left,
+        }
+    }
+}
+
+impl Iterator for Strongholds<'_> {
+    type Item = BlockPosition;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if 0 == self.strongholds_left {
+            return None;
+        }
+        // We subtract one since cubiomes strongholds left is weird like that
+        self.strongholds_left =
+            // SAFETY: ffi function is called correctly, and as we checked strongholds_left we aren't iterating beyond its borders
+            unsafe { cubiomes_sys::nextStronghold(&mut self.inner, self.generator.as_ptr()) }
+                as usize
+                - 1;
+
+        Some(self.inner.pos.into())
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (self.strongholds_left, Some(self.strongholds_left))
+    }
+}

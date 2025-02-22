@@ -1,5 +1,3 @@
-extern crate cubiomes;
-
 use cubiomes::{
     enums::{Dimension, MCVersion, StructureType},
     generator::{BlockPosition, Generator, GeneratorFlags},

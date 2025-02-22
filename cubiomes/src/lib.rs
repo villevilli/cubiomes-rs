@@ -11,8 +11,8 @@
 //! # Usage
 //! See each module for usage of a specific feature of the library.
 //!
-//! For biome generation see [`crate::generator`]
-//! For structure geneartion see [`crate::structures`]
+//! - For biome generation see [`crate::generator`]
+//! - For structure geneartion see [`crate::structures`]
 //!
 
 #![warn(clippy::undocumented_unsafe_blocks)]
