@@ -1,6 +1,11 @@
-//! Module containing structure generation
+//! Module containing structure generation and spawn generation
 //!
-//! for details on usage see [StructureRegion]
+//! Most structures in minecraft are generated using a grid of regions
+//! for these types of structures, see [StructureRegion]
+//!
+//! Notably, stronghold generation differs, following an iterative
+//! method instead. For generating the strongholdpositions, see
+//! [StrongholdIterator]
 
 use std::mem::{transmute, MaybeUninit};
 
@@ -10,7 +15,7 @@ use thiserror::Error;
 
 use enums::*;
 
-use super::{position::BlockPosition, Generator};
+use crate::generator::{BlockPosition, Generator};
 
 /// Reperesents an error in cubiomes
 #[derive(Error, Debug, PartialEq, Eq, Hash, Clone, Copy)]
@@ -33,14 +38,12 @@ impl Generator {
     /// The function panics if the version of the structure region does not match
     /// the generator
     pub fn try_generate_structure_in_region(
-        &self,
+        &mut self,
         region_pos: StructureRegion,
     ) -> Option<BlockPosition> {
         assert_eq!(self.minecraft_version(), region_pos.minecraft_version);
 
         let pos = self.get_structure_generation_attempt(region_pos)?;
-
-        dbg!(pos);
 
         if self
             .verify_structure_generation_attempt(pos, region_pos.structure_type)
@@ -57,7 +60,7 @@ impl Generator {
     /// See [StructureRegion] for an explanation for what a structure generation
     /// attempt means
     pub fn verify_structure_generation_attempt(
-        &self,
+        &mut self,
         pos: BlockPosition,
         structure_type: StructureType,
     ) -> Result<bool, StructureGenerationError> {
@@ -65,7 +68,7 @@ impl Generator {
         match unsafe {
             cubiomes_sys::isViableStructurePos(
                 structure_type as i32,
-                self.generator,
+                self.as_mut_ptr(),
                 pos.x,
                 pos.z,
                 StructureFlags::empty().bits(),
@@ -105,23 +108,23 @@ impl Generator {
 /// Alternatively you can just use [Generator::try_generate_structure_in_region()]
 /// which will perform all of this automatically.
 ///
-/// ## Example
+/// # Examples
+/// ## Finding structures within a seed
 /// ```
-/// todo!()
+#[doc = include_str!("../../examples/find_structures.rs")]
 /// ```
 ///
-/// # Optimization notes
+/// ## Finding a seed with a specific structure at spawn
 ///
 /// It should be noted, that only the lower 48 bits of the seed affect
-/// the positions of structure generation attempts. Generating the position
-/// of a structure generation attempt is also cheaper than verifying the biome
-/// So if you, for example, want to find the a seed with a specific set of structures
-/// near spawn, you should try to find it by modifying the 48 bottom bits and checking
-/// only attempts. Once you've found the attempts you can modify the top 16 bits
-/// until the biomes match.
+/// the positions of structure generation attempts. Generating the position of a
+/// structure generation attempt is also cheaper than verifying the biome for a structure.
 ///
-/// ## Example
-/// Looking for a specific structure inside the first chunk
+/// So if you for example, want to find a seed with a specific set of structures
+/// near spawn, you should try to find it by modifying the 48 bottom bits and that an
+/// attempt exist in your wanted region. Once you've found the attempts, you can modify
+/// the top 16 bits until the biomes match. This example demonstrates how to achieve this.
+///
 /// ```
 #[doc = include_str!("../../examples/efficient_structure_hunting.rs")]
 /// ```
@@ -135,11 +138,11 @@ impl Generator {
 pub struct StructureRegion {
     /// The x position of [self].
     ///
-    /// The scale can be acquired with [Self::region_size()]
+    /// The scale can be acquired with [Self::region_size_blocks()] or [Self::region_size_chunks()]
     pub x: i32,
     /// The z position of [self]
     ///
-    /// The scale can be acquired with [Self::region_size()]
+    /// The scale can be acquired with [Self::region_size_blocks()] or [Self::region_size_chunks()]
     pub z: i32,
     region_size: i8,
     pub(crate) minecraft_version: enums::MCVersion,
@@ -268,3 +271,5 @@ fn get_structure_scale(
         }
     }
 }
+
+pub struct StrongholdIterator;

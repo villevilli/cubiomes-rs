@@ -1,5 +1,6 @@
-use super::{position::BlockPosition, structures::StructureRegion, Generator};
+use super::{position::BlockPosition, Generator};
 use crate::enums::*;
+use crate::structures::StructureRegion;
 
 #[test]
 #[should_panic]
@@ -15,7 +16,7 @@ fn no_structure_found() {
     )
     .expect("Failed to generate region position");
 
-    let generator = Generator::new(
+    let mut generator = Generator::new(
         minecraft_version,
         seed,
         Dimension::DIM_OVERWORLD,
@@ -41,7 +42,7 @@ fn test_structure_generation() {
 
     dbg!(pos);
 
-    let generator = Generator::new(
+    let mut generator = Generator::new(
         minecraft_version,
         seed,
         Dimension::DIM_OVERWORLD,
@@ -68,7 +69,7 @@ fn test_structure_generation_negative() {
 
     dbg!(pos);
 
-    let generator = Generator::new(
+    let mut generator = Generator::new(
         minecraft_version,
         seed,
         Dimension::DIM_OVERWORLD,

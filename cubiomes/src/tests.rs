@@ -9,8 +9,7 @@ fn init_generator() -> Generator {
     let seed: i64 = -4804349703814383506;
     let mc_version = MCVersion::MC_1_21_WD;
 
-    // SAFETY:
-    // seed is immediatly applied
+    // SAFETY: seed is immediatly applied
     unsafe {
         let mut generator = Generator::new_without_seed(mc_version, GeneratorFlags::empty());
         generator.apply_seed(Dimension::DIM_OVERWORLD, seed);

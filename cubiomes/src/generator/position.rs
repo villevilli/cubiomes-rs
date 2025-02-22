@@ -1,6 +1,6 @@
 use cubiomes_sys::Pos;
 
-use super::Scale;
+use crate::generator::Scale;
 
 ///A 2d position inside minecraft
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
