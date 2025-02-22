@@ -2,7 +2,7 @@
 //! minecraft worldgen for seed finding and other purposes.
 //!
 //! This crate provides safe bindings for [cubiomes](https://github.com/Cubitect/cubiomes) by cubitect.
-//! Cubiomes is intended for use in seed finding and biome map generation with low memory overhead.
+//! Cubiomes is intended for use in seed finding and biome map generation.
 //!
 //! The crate is organized into different modules which loosely correspond to features
 //! available in cubiomes. The crate is still incomplete, as it doesn't provide all features

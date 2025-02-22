@@ -1,6 +1,6 @@
 [package]
 name = "cubiomes"
-version = "0.1.3"
+version = "0.2.0"
 edition = "2021"
 authors = ["Ville Kujala"]
 description = "A safe rust wrapper for the cubiome library"
@@ -17,7 +17,7 @@ cc_build = ["cubiomes-sys/cc_build"]
 [dependencies]
 thiserror = "2.0"
 bitflags = "2.0"
-cubiomes-sys = { path = "../cubiomes-sys", version = "0.1.0", default-features = false }
+cubiomes-sys = { path = "../cubiomes-sys", version = "0.1.1", default-features = false }
 
 [dev-dependencies]
 rand = "0.9.0"
