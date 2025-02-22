@@ -87,6 +87,8 @@ impl Generator {
 /// the structure. Then if the biome at the generation attempt is correct
 /// the structure is generated
 ///
+/// # Usage
+///
 /// The module should be used by first finding one of thoes attempts with
 /// [Self::get_structure_generation_attempt()] then verifying it by using
 /// [Generator::verify_structure_generation_attempt()]. The generator should
@@ -95,6 +97,27 @@ impl Generator {
 ///
 /// Alternatively you can just use [Generator::try_generate_structure_in_region()]
 /// which will perform all of this automatically.
+///
+/// ## Example
+/// ```
+/// ```
+///
+/// # Optimization notes
+///
+/// It should be noted, that only the lower 48 bits of the seed affect
+/// the positions of structure generation attempts. Generating the position
+/// of a structure generation attempt is also cheaper than verifying the biome
+/// So if you, for example, want to find the a seed with a specific set of structures
+/// near spawn, you should try to find it by modifying the 48 bottom bits and checking
+/// only attempts. Once you've found the attempts you can modify the top 16 bits
+/// until the biomes match.
+///
+/// ## Example
+/// ```
+#[doc = include_str!("../../examples/efficient_structure_hunting.rs")]
+/// ```
+///
+/// # Details
 ///
 /// The size of each region can be acquired with [Self::region_size_blocks()]
 /// or [Self::region_size_chunks()] respectively.
