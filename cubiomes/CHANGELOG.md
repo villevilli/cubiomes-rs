@@ -13,6 +13,7 @@ The project follows semver
 - Adds functions to access the underlying pointer to the generator
 - Structure generation to generator
 - StructureRegion for help with structure generation
+- Adds stronghold generation to generator
 
 ### Changed
 
