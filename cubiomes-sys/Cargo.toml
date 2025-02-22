@@ -1,6 +1,6 @@
 [package]
 name = "cubiomes-sys"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["Ville Kujala"]
 description = "Raw ff binding for the cubiomes library"

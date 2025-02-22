@@ -6,6 +6,8 @@ The project follows semver
 
 ## [Unreleased]
 
+## [0.1.1] - 2024-02-22
+
 ### Added
 
 - Changelog.md
