@@ -21,7 +21,7 @@
 //!
 //!
 //!
-//! # Detail
+//! # Details
 //!
 //! This module follow closely to how the underlying cubiomes library works, but the
 //! features have been wrapped by a safe rust api
@@ -44,7 +44,7 @@ use thiserror::Error;
 use crate::enums;
 use cubiomes_sys::{getMinCacheSize, num_traits::FromPrimitive};
 
-///An error with the generator
+/// An error with the generator
 ///
 /// This enum is produced as an error from the generator
 #[derive(Error, Debug, PartialEq, Eq, Hash, Clone, Copy)]
@@ -267,7 +267,7 @@ fn err_if_zero(num: i32, err: TryFromRangeError) -> Result<i32, TryFromRangeErro
     Ok(num)
 }
 
-/// The cubioems generator
+/// The cubiomes generator
 ///
 /// This is the struct which holds a cubiomes generator
 /// and is used for most actions with the generator

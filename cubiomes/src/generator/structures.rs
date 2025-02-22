@@ -1,3 +1,7 @@
+//! Module containing structure generation
+//!
+//! for details on usage see [StructureRegion]
+
 use std::mem::{transmute, MaybeUninit};
 
 use bitflags::bitflags;
@@ -8,8 +12,11 @@ use enums::*;
 
 use super::{position::BlockPosition, Generator};
 
+/// Reperesents an error in cubiomes
 #[derive(Error, Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub enum StructureGenerationError {
+    /// Cubiomes did not return 0 or 1. Encountering this error is most likely a bug
+    /// please report it on github
     #[error("Underlying library cubiomes returned a bool that is not 0 or 1.")]
     CubiomesError,
 }
@@ -100,6 +107,7 @@ impl Generator {
 ///
 /// ## Example
 /// ```
+/// todo!()
 /// ```
 ///
 /// # Optimization notes
@@ -113,6 +121,7 @@ impl Generator {
 /// until the biomes match.
 ///
 /// ## Example
+/// Looking for a specific structure inside the first chunk
 /// ```
 #[doc = include_str!("../../examples/efficient_structure_hunting.rs")]
 /// ```
