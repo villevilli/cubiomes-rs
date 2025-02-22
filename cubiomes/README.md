@@ -3,6 +3,9 @@ A (hopefully) safe rust wrapper for the cubiomes library developped by cubitect
 
 The original cubiomes library is available here: https://github.com/cubitect/cubiomes/
 
+For documentation and usage see [docs.rs](https://docs.rs/cubiomes/latest/cubiomes/). Please
+also see the crate on [crates.io](https://crates.io/crates/cubiomes)
+
 ## Installation
 use cargo to install cubiomes
 ``cargo add cubiomes``

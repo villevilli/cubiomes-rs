@@ -2,7 +2,8 @@ extern crate cubiomes;
 
 use cubiomes::{
     enums::{Dimension, MCVersion, StructureType},
-    generator::{position::BlockPosition, structures::StructureRegion, Generator, GeneratorFlags},
+    generator::{BlockPosition, Generator, GeneratorFlags},
+    structures::StructureRegion,
 };
 
 // We attempt to find the specified structure on

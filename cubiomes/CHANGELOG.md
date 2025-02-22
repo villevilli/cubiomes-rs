@@ -10,6 +10,7 @@ The project follows semver
 
 - Changelog.md for tracking changes
 - MinecraftCoordinates to represent x and z position inside a minecraft world
+- Adds functions to access the underlying pointer to the generator
 - Structure generation to generator
 - StructureRegion for help with structure generation
 

@@ -9,8 +9,7 @@
 //!
 //! For more complicated usage, use a [Cache] generated with [Generator::new_cache()]
 //!
-//! For structure generation, use a [structures::StructureGenerator] which can be generated with
-//! [Generator::new_structure_generator()]
+//! For structure generation, see [crate::structures]
 //!
 //! ## Optimal height
 //!
@@ -26,11 +25,12 @@
 //! This module follow closely to how the underlying cubiomes library works, but the
 //! features have been wrapped by a safe rust api
 
-pub mod position;
-pub mod structures;
+mod position;
 
 #[cfg(test)]
 mod tests;
+
+pub use position::*;
 
 use std::{
     alloc::{alloc, dealloc, Layout},
@@ -75,7 +75,7 @@ pub enum GeneratorError {
     GenBiomeToCacheFailure(i32),
     /// Index out of bounds while getting from the cache
     ///
-    /// This indicates that [`Cache::get_biome_at()`] tried to get an index
+    /// This indicates that [`Cache::biome_at()`] tried to get an index
     /// outside the bounds of the internal vector. This either means that
     /// the cache has not yet been filled, or you tried to get something outside
     /// of the lenght of the vector
@@ -417,6 +417,35 @@ impl Generator {
             .expect("Cubiomes generator has an invalid mc version")
     }
 
+    /// Gets a raw mutable pointer to the underlying generator
+    ///
+    /// This can be used for calling into functions from cubiomes_sys with
+    /// the raw pointer, or other activities invloving the raw cubiomes
+    /// generator
+    ///
+    /// # Safety
+    /// The pointer must remain pointing to a valid instance of the cubiomes generator
+    ///
+    /// The pointer shouldn't outlive the generator, as when dropped it gets unallocated
+    pub unsafe fn as_mut_ptr(&mut self) -> *mut cubiomes_sys::Generator {
+        self.generator
+    }
+
+    /// Gets a raw const pointer to the underlying generator
+    ///
+    /// This can be used for calling into cubiomes_sys with the raw pointer
+    /// or other such things
+    ///
+    /// # Safety
+    /// The data the pointer points to, should not be mutated. Use [Self::as_mut_ptr()]
+    /// for mutating data.
+    ///
+    /// The pointer shouldn't outlive the generator, as when the generator is dropped
+    /// the memory it points to becomes unallocated
+    pub unsafe fn as_ptr(&self) -> *const cubiomes_sys::Generator {
+        self.generator
+    }
+
     fn min_cache_size_from_range(&self, range: Range) -> usize {
         #[allow(clippy::unwrap_used)]
         let raw_range: cubiomes_sys::Range = range.try_into().unwrap();
@@ -427,11 +456,6 @@ impl Generator {
         unsafe {
             self.unchecked_min_cache_size(raw_range.scale, raw_range.sx, raw_range.sy, raw_range.sz)
         }
-    }
-
-    fn seed_for_cubiomes(&self) -> u64 {
-        // SAFETY: transmuting primitivies of the same size does not cause ub
-        unsafe { transmute::<i64, u64>(self.seed()) }
     }
 
     /// Gets the minimum cache size for a specific sized range
@@ -581,7 +605,7 @@ impl Cache<'_> {
     /// Gets the range this cache was generated with. Useful for
     /// if you want to read from the caches.
     ///
-    /// See example from [`Self::get_cache()`] for example usage
+    /// See example from [`Self::as_vec()`] for example usage
     pub fn range(&self) -> &Range {
         &self.range
     }
