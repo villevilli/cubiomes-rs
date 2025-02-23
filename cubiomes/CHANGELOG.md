@@ -6,6 +6,9 @@ The project follows semver
 
 ## [Unreleased]
 
+### Added
+- Benchmarking using criterion
+
 ## [0.2.1] - 2024-02-23
 
 ### Removed

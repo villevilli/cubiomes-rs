@@ -3,7 +3,7 @@ use std::time::Duration;
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use cubiomes::{
     enums::{Dimension, MCVersion},
-    generator::{Generator, GeneratorFlags, Range},
+    generator::{BlockPosition, Generator, GeneratorFlags, Range},
 };
 use rand::{rngs::SmallRng, Rng, SeedableRng};
 
@@ -57,8 +57,8 @@ pub fn biome_generation_benchmark(c: &mut Criterion) {
 
     for seed in rng.random_iter::<i64>().take(10) {
         group.bench_with_input(BenchmarkId::from_parameter(seed), &seed, |bench, seed| {
+            generator.apply_seed(Dimension::DIM_OVERWORLD, *seed);
             bench.iter(|| {
-                generator.apply_seed(Dimension::DIM_OVERWORLD, *seed);
                 generator
                     .new_cache(RANGE)
                     .fill_cache()
@@ -68,9 +68,27 @@ pub fn biome_generation_benchmark(c: &mut Criterion) {
     }
 }
 
+pub fn stronghold_generation(c: &mut Criterion) {
+    let mut generator = init_generator();
+    let rng = SmallRng::seed_from_u64(RNG_SEED);
+
+    let mut group = c.benchmark_group("Stronghold Generation");
+
+    group.sample_size(20);
+    group.measurement_time(Duration::from_secs(30));
+
+    for seed in rng.random_iter::<i64>().take(4) {
+        group.bench_with_input(BenchmarkId::from_parameter(seed), &seed, |bench, seed| {
+            generator.apply_seed(Dimension::DIM_OVERWORLD, *seed);
+            bench.iter(|| generator.strongholds().collect::<Vec<BlockPosition>>());
+        });
+    }
+}
+
 criterion_group!(
     benches,
     biome_generation_benchmark,
-    generator_initialization
+    generator_initialization,
+    stronghold_generation
 );
 criterion_main!(benches);
