@@ -6,6 +6,11 @@ The project follows semver
 
 ## [Unreleased]
 
+## [0.2.1] - 2024-02-23
+
+### Removed
+- Unnessecary re-export
+
 ## [0.2.0] - 2024-02-22
 
 ### Added

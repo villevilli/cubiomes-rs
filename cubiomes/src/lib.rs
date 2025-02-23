@@ -24,7 +24,7 @@
 pub mod generator;
 pub mod structures;
 
-pub use cubiomes_sys::{enums, Dimension};
+pub use cubiomes_sys::enums;
 
 #[cfg(test)]
 mod tests;
