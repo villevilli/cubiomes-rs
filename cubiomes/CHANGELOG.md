@@ -9,6 +9,9 @@ The project follows semver
 ### Added
 - Benchmarking using criterion
 
+### Changed
+- Marked the generator Send And Sync
+
 ## [0.2.1] - 2024-02-23
 
 ### Removed
