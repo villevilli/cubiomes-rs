@@ -21,7 +21,7 @@ use enums::*;
 use crate::generator::{BlockPosition, Generator};
 
 /// Reperesents an error in cubiomes
-#[derive(Error, Debug, PartialEq, Eq, Hash, Clone, Copy)]
+#[derive(Error, Debug, PartialEq, Eq, Hash, Clone, Copy, PartialOrd, Ord)]
 pub enum StructureGenerationError {
     /// Cubiomes did not return 0 or 1. Encountering this error is most likely a bug
     /// please report it on github
@@ -137,7 +137,7 @@ impl Generator {
 /// The size of each region can be acquired with [Self::region_size_blocks()]
 /// or [Self::region_size_chunks()] respectively.
 ///
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, PartialOrd, Ord)]
 pub struct StructureRegion {
     /// The x position of [self].
     ///

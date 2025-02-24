@@ -11,6 +11,7 @@ The project follows semver
 
 ### Changed
 - Marked the generator Send And Sync
+- Derives Ord and PartialOrd where it makes sense
 
 ## [0.2.1] - 2024-02-23
 

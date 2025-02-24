@@ -6,6 +6,10 @@ The project follows semver
 
 ## [Unreleased]
 
+### Changed
+
+- Derives PatialOrd and Ord for all enum types
+
 ## [0.1.1] - 2024-02-22
 
 ### Added
