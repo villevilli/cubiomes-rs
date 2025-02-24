@@ -84,6 +84,8 @@ fn main() {
         .parse_callbacks(Box::new(DeriveMacros(vec![
             "FromPrimitive".into(),
             "ToPrimitive".into(),
+            "PartialOrd".into(),
+            "Ord".into(),
         ])))
         .blocklist_function(".*") //Blocks all functions, as we are only intrested in the enums
         .allowlist_type(["BiomeID", "Dimension", "MCVersion", "StructureType"].join("|"))

@@ -3,7 +3,7 @@ use cubiomes_sys::Pos;
 use crate::generator::Scale;
 
 ///A 2d position inside minecraft
-#[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct BlockPosition {
     /// The x axis of the position
     pub x: i32,

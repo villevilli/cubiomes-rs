@@ -49,7 +49,7 @@ use cubiomes_sys::{getMinCacheSize, num_traits::FromPrimitive};
 /// An error with the generator
 ///
 /// This enum is produced as an error from the generator
-#[derive(Error, Debug, PartialEq, Eq, Hash, Clone, Copy)]
+#[derive(Error, Debug, PartialEq, Eq, Hash, Clone, Copy, PartialOrd, Ord)]
 pub enum GeneratorError {
     /// Biomeid produced by cubiomes is not a valid biome
     ///
@@ -101,7 +101,7 @@ impl From<TryFromRangeError> for GeneratorError {
 /// fail if either size_x or size_z is 0 or any size is bigger than [i32::MAX].
 ///
 /// A size_y of 0 is equal to size_y of 1
-#[derive(Error, Debug, PartialEq, Eq, Clone, Copy, Hash)]
+#[derive(Error, Debug, PartialEq, Eq, Clone, Copy, Hash, PartialOrd, Ord)]
 pub enum TryFromRangeError {
     #[error("x sixe is out of bounds for range")]
     #[allow(missing_docs)]
@@ -176,7 +176,7 @@ impl Scale {
 /// The range represents a location and size of a cache.
 ///
 /// The position and size of the range is scaled by its [Range::scale] attribute.
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, PartialOrd, Ord)]
 pub struct Range {
     /// Scale used for the coordinates
     pub scale: Scale,
