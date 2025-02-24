@@ -292,6 +292,16 @@ impl Drop for Generator {
     }
 }
 
+// SAFETY: As the raw pointer inside generator is exclusive to this instance of
+// generator, sending it in between threads should be safe. Only way to access
+// the raw pointer is via unsafe.
+unsafe impl Send for Generator {}
+
+// SAFETY: The generator shouldn't have interior mutation without an exclusive
+// mutable reference. All public api:s which mutate the internal generator
+// (even briefly) should require an exclusive reference.
+unsafe impl Sync for Generator {}
+
 impl Generator {
     /// Initializes a new generator for the given minecraft version and flags
     /// with a seed and dimension applied
@@ -427,6 +437,8 @@ impl Generator {
     /// The pointer must remain pointing to a valid instance of the cubiomes generator
     ///
     /// The pointer shouldn't outlive the generator, as when dropped it gets unallocated
+    ///
+    /// Also keep in mind thread safety, if working in a multithreaded environment.
     pub unsafe fn as_mut_ptr(&mut self) -> *mut cubiomes_sys::Generator {
         self.generator
     }
@@ -442,6 +454,9 @@ impl Generator {
     ///
     /// The pointer shouldn't outlive the generator, as when the generator is dropped
     /// the memory it points to becomes unallocated
+    ///
+    /// Also keep in mind thread safety. Do not mutate the type if you do not have
+    /// exclusive access.
     pub unsafe fn as_ptr(&self) -> *const cubiomes_sys::Generator {
         self.generator
     }
