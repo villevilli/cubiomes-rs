@@ -25,6 +25,8 @@
 //! This module follow closely to how the underlying cubiomes library works, but the
 //! features have been wrapped by a safe rust api
 
+pub mod colors;
+
 mod position;
 
 #[cfg(test)]
