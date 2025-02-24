@@ -1,3 +1,4 @@
+use super::colors;
 use super::{position::BlockPosition, Generator};
 use crate::enums::*;
 use crate::structures::StructureRegion;
@@ -79,4 +80,13 @@ fn test_structure_generation_negative() {
     generator
         .try_generate_structure_in_region(pos)
         .expect("Couldn't find structure when there should be a structure");
+}
+
+#[test]
+fn init_biome_colors() {
+    let colors = colors::new_biome_color_map();
+
+    dbg!(&colors);
+
+    assert_eq!(colors.len(), 94);
 }
