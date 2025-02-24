@@ -8,6 +8,7 @@ The project follows semver
 
 ### Added
 - Benchmarking using criterion
+- Colormap for mapping biomes to colors
 
 ### Changed
 - Marked the generator Send And Sync
