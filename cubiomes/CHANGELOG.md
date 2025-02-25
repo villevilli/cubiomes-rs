@@ -9,10 +9,17 @@ The project follows semver
 ### Added
 - Benchmarking using criterion
 - Colormap for mapping biomes to colors
+- added Cache::new(..) in favor of Generator::new_cache(..)
 
 ### Changed
 - Marked the generator Send And Sync
 - Derives Ord and PartialOrd where it makes sense
+- Moved structures::Strongholds to structures::strongholds::StrongholdIter
+- Moved generator::GeneratorError to its own module error generator::error::GeneratorError
+
+### Removed 
+- Generator::new_cache(..)
+
 
 ## [0.2.1] - 2024-02-23
 
