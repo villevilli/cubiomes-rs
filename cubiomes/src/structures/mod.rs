@@ -1,11 +1,11 @@
 //! Module containing structure generation and spawn generation
 //!
-//! Most structures in minecraft are generated using a grid of regions
-//! for these types of structures, see [`StructureRegion`]
+//! Most structures in minecraft are generated using a grid of regions. For
+//! these types of structures, see [`StructureRegion`].
 //!
-//! Notably, stronghold generation differs, following an iterative
-//! method. For generating positions of strongholds, see
-//! [`strongholds::Strongholds`] and [`crate::generator::Generator::strongholds()`]
+//! Notably stronghold generation follows an iterative method instead. For
+//! generating positions of strongholds, see [`strongholds::StrongholdIter`] and
+//! [`crate::generator::Generator::strongholds()`].
 
 #[cfg(test)]
 mod test;
@@ -25,8 +25,8 @@ use crate::generator::{BlockPosition, Generator};
 /// Reperesents an error in cubiomes
 #[derive(Error, Debug, PartialEq, Eq, Hash, Clone, Copy, PartialOrd, Ord)]
 pub enum StructureGenerationError {
-    /// Cubiomes did not return 0 or 1. Encountering this error is most likely a bug
-    /// please report it on github
+    /// Cubiomes did not return 0 or 1. Encountering this error is most likely a
+    /// bug. Please report it on github
     #[error("Underlying library cubiomes returned a bool that is not 0 or 1.")]
     CubiomesError,
 }
@@ -36,12 +36,12 @@ pub enum StructureGenerationError {
 bitflags! {struct StructureFlags: u32{}}
 
 impl Generator {
-    /// Tries to get the [`BlockPosition`] of a structure inside of a [`StructureRegion`]
-    /// with this generator.
+    /// Tries to get the [`BlockPosition`] of a structure inside of a
+    /// [`StructureRegion`] with this generator.
     ///
     /// # Panics
-    /// The function panics if the version of the structure region does not match
-    /// the generator
+    /// The function panics if the version of the structure region does not
+    /// match the generator
     pub fn try_generate_structure_in_region(
         &mut self,
         region_pos: StructureRegion,
@@ -62,8 +62,8 @@ impl Generator {
 
     /// Used to verify a structure generation attempt
     ///
-    /// See [`StructureRegion`] for an explanation for what a structure generation
-    /// attempt means
+    /// See [`StructureRegion`] for an explanation for what a structure
+    /// generation attempt means.
     pub fn verify_structure_generation_attempt(
         &mut self,
         pos: BlockPosition,
@@ -94,7 +94,8 @@ impl Generator {
     }
 }
 
-/// Represents a region for generating a specific structure in a specific version of minecraft
+/// Represents a region for generating a specific structure in a specific
+/// version of minecraft
 ///
 /// Minecraft structure generation works by splitting the world into
 /// regions, the size of which is specified in the structures configuration.
@@ -122,13 +123,15 @@ impl Generator {
 /// ## Finding a seed with a specific structure at spawn
 ///
 /// It should be noted, that only the lower 48 bits of the seed affect
-/// the positions of structure generation attempts. Generating the position of a
-/// structure generation attempt is also cheaper than verifying the biome for a structure.
+/// the positions of structure generation attempts. Generating the position of
+/// a structure generation attempt is also cheaper than verifying the biome for
+/// a structure.
 ///
 /// So if you for example, want to find a seed with a specific set of structures
-/// near spawn, you should try to find it by modifying the 48 bottom bits and that an
-/// attempt exist in your wanted region. Once you've found the attempts, you can modify
-/// the top 16 bits until the biomes match. This example demonstrates how to achieve this.
+/// near spawn, you should try to find it by modifying the 48 bottom bits and
+/// that an attempt exist in your wanted region. Once you've found the attempts,
+/// you can modify the top 16 bits until the biomes match. This example
+/// demonstrates how to achieve this.
 ///
 /// ```
 #[doc = include_str!("../../examples/efficient_structure_hunting.rs")]
@@ -143,11 +146,13 @@ impl Generator {
 pub struct StructureRegion {
     /// The x position of [self].
     ///
-    /// The scale can be acquired with [`Self::region_size_blocks()`] or [`Self::region_size_chunks()`]
+    /// The scale can be acquired with [`Self::region_size_blocks()`] or
+    /// [`Self::region_size_chunks()`]
     pub x: i32,
     /// The z position of [self]
     ///
-    /// The scale can be acquired with [`Self::region_size_blocks()`] or [`Self::region_size_chunks()`]
+    /// The scale can be acquired with [`Self::region_size_blocks()`] or
+    /// [`Self::region_size_chunks()`]
     pub z: i32,
     region_size: i8,
     pub(crate) minecraft_version: enums::MCVersion,

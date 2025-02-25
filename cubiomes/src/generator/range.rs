@@ -39,7 +39,7 @@ impl Scale {
     }
 }
 
-/// Size and position for a [Cache]
+/// Size and position for a [`super::Cache`]
 ///
 /// The range represents a location and size of a cache.
 ///

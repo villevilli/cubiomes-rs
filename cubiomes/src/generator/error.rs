@@ -33,7 +33,7 @@ pub enum GeneratorError {
     GenBiomeToCacheFailure(i32),
     /// Index out of bounds while getting from the cache
     ///
-    /// This indicates that [`Cache::biome_at()`] tried to get an index
+    /// This indicates that [`super::Cache::biome_at()`] tried to get an index
     /// outside the bounds of the internal vector. This either means that
     /// the cache has not yet been filled, or you tried to get something outside
     /// of the lenght of the vector

@@ -1,4 +1,5 @@
-//! Wrapper struct for iterator of stringholds in a [Generator]
+//! Module containing [StrongholdIter], an iterator which generates all the
+//! strongholds in a [Generator]
 
 use std::mem::{transmute, MaybeUninit};
 
@@ -6,13 +7,14 @@ use crate::generator::{BlockPosition, Generator};
 
 /// An iterator over the strongholds in a [Generator]
 ///
-/// As the strongholds in minecraft are generated iteratively,
-/// we use an iterator for generating them.
+/// As the strongholds in minecraft are generated iteratively, we use an
+/// iterator for generating them.
 ///
-/// The iterator produces the [BlockPosition] of the next stronghold
-/// until all strongholds are generated.
+/// The iterator produces the [BlockPosition] of the next stronghold until all
+/// strongholds are generated.
 ///
 /// # Examples
+/// Generate and collect all the strongholds in a seed.
 /// ```
 #[doc = include_str!("../../examples/generate_strongholds.rs")]
 /// ```
@@ -26,8 +28,8 @@ pub struct StrongholdIter<'generator> {
 impl<'generator> Generator {
     /// Constructs an iterator over the strongholds in this generator
     ///
-    /// Constructs a new [Strongholds] from [self]. See [Strongholds]
-    /// for usage
+    /// Constructs a new [StrongholdIter] from [self]. See [StrongholdIter] for
+    /// usage
     #[must_use]
     pub fn strongholds(&'generator self) -> StrongholdIter<'generator> {
         let mut sh_iter: MaybeUninit<cubiomes_sys::StrongholdIter> = MaybeUninit::uninit();
@@ -65,7 +67,8 @@ impl Iterator for StrongholdIter<'_> {
         }
         // We subtract one since cubiomes strongholds left is weird like that
         self.strongholds_left =
-            // SAFETY: ffi function is called correctly, and as we checked strongholds_left we aren't iterating beyond its borders
+            // SAFETY: ffi function is called correctly, and as we checked 
+            // strongholds_left we aren't iterating beyond its borders
             unsafe { cubiomes_sys::nextStronghold(&mut self.inner, self.generator.as_ptr()) }
                 as usize
                 - 1;
