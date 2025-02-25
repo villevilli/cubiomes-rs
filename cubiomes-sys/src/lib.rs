@@ -1,7 +1,6 @@
 //! Raw ffi bindings to the cubiomes library.
 //!
 //! This crate also contains module [enums] for building enums for conviniance
-
 #![allow(non_upper_case_globals)]
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
