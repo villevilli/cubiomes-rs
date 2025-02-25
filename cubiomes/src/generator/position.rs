@@ -2,7 +2,6 @@ use cubiomes_sys::Pos;
 
 use super::range::Scale;
 
-
 ///A 2d position inside minecraft
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct BlockPosition {
@@ -14,12 +13,14 @@ pub struct BlockPosition {
 
 impl BlockPosition {
     /// Creates a new instance of a minecraft position at block scale
+    #[must_use]
     pub fn new(x: i32, z: i32) -> Self {
         Self { x, z }
     }
 
     /// Creates a new instance of minecraft position from coordinates at the
     /// specific [Scale]
+    #[must_use]
     pub fn from_scaled(x: i32, z: i32, scale: Scale) -> Self {
         Self {
             x: scale.unscale_coord(x),
@@ -28,6 +29,7 @@ impl BlockPosition {
     }
 
     /// Scales this minecraft position to a [Scale]
+    #[must_use]
     pub fn as_scaled(&self, scale: Scale) -> (i32, i32) {
         (scale.scale_coord(self.x), scale.scale_coord(self.z))
     }
@@ -35,6 +37,7 @@ impl BlockPosition {
     /// Scales the position down by a given number
     ///
     /// Internally divides both axis by scale
+    #[must_use]
     pub fn scale_by_num(&self, scale: i32) -> (i32, i32) {
         (self.x.div_euclid(scale), self.z.div_euclid(scale))
     }

@@ -1,14 +1,16 @@
 //! Module containing structure generation and spawn generation
 //!
 //! Most structures in minecraft are generated using a grid of regions
-//! for these types of structures, see [StructureRegion]
+//! for these types of structures, see [`StructureRegion`]
 //!
 //! Notably, stronghold generation differs, following an iterative
 //! method. For generating positions of strongholds, see
-//! [Strongholds] and [crate::generator::Generator::strongholds()]
+//! [`strongholds::Strongholds`] and [`crate::generator::Generator::strongholds()`]
 
 #[cfg(test)]
 mod test;
+
+pub mod strongholds;
 
 use std::mem::{transmute, MaybeUninit};
 
@@ -16,7 +18,7 @@ use bitflags::bitflags;
 use cubiomes_sys::enums::{self};
 use thiserror::Error;
 
-use enums::*;
+use enums::StructureType;
 
 use crate::generator::{BlockPosition, Generator};
 
@@ -34,7 +36,7 @@ pub enum StructureGenerationError {
 bitflags! {struct StructureFlags: u32{}}
 
 impl Generator {
-    /// Tries to get the [BlockPosition] of a structure inside of a [StructureRegion]
+    /// Tries to get the [`BlockPosition`] of a structure inside of a [`StructureRegion`]
     /// with this generator.
     ///
     /// # Panics
@@ -60,7 +62,7 @@ impl Generator {
 
     /// Used to verify a structure generation attempt
     ///
-    /// See [StructureRegion] for an explanation for what a structure generation
+    /// See [`StructureRegion`] for an explanation for what a structure generation
     /// attempt means
     pub fn verify_structure_generation_attempt(
         &mut self,
@@ -141,11 +143,11 @@ impl Generator {
 pub struct StructureRegion {
     /// The x position of [self].
     ///
-    /// The scale can be acquired with [Self::region_size_blocks()] or [Self::region_size_chunks()]
+    /// The scale can be acquired with [`Self::region_size_blocks()`] or [`Self::region_size_chunks()`]
     pub x: i32,
     /// The z position of [self]
     ///
-    /// The scale can be acquired with [Self::region_size_blocks()] or [Self::region_size_chunks()]
+    /// The scale can be acquired with [`Self::region_size_blocks()`] or [`Self::region_size_chunks()`]
     pub z: i32,
     region_size: i8,
     pub(crate) minecraft_version: enums::MCVersion,
@@ -153,10 +155,10 @@ pub struct StructureRegion {
 }
 
 impl StructureRegion {
-    /// Creates a new [StructureRegion]
+    /// Creates a new [`StructureRegion`]
     ///
     /// This function creates a new structure region position at the given
-    /// region x and z value with the given [StructureType] and [enums::MCVersion]
+    /// region x and z value with the given [`StructureType`] and [`enums::MCVersion`]
     pub fn new(
         region_x: i32,
         region_z: i32,
@@ -174,10 +176,10 @@ impl StructureRegion {
         })
     }
 
-    /// Creates a new [StructureRegion] with a [BlockPosition]
+    /// Creates a new [`StructureRegion`] with a [`BlockPosition`]
     ///
     /// The block position is automatically converted into the correct scale
-    /// for the specific [StructureType]
+    /// for the specific [`StructureType`]
     pub fn from_block_position(
         pos: BlockPosition,
         minecraft_version: enums::MCVersion,
@@ -186,7 +188,7 @@ impl StructureRegion {
         let region_scale = get_structure_scale(structure_type, minecraft_version)?;
 
         // Multiply the scale by 16 since structure positions are in chunk size for some reason
-        let (x, z) = pos.scale_by_num((region_scale as i32) * 16);
+        let (x, z) = pos.scale_by_num(i32::from(region_scale) * 16);
 
         Ok(Self {
             x,
@@ -197,9 +199,10 @@ impl StructureRegion {
         })
     }
 
-    /// Tries to get the [BlockPosition] of a generation attempt for self
+    /// Tries to get the [`BlockPosition`] of a generation attempt for self
     ///
     /// Check [self] for what a generation attempt means
+    #[must_use]
     pub fn get_structure_generation_attempt(&self, seed: i64) -> Option<BlockPosition> {
         let minecraft_version = self.minecraft_version;
 
@@ -230,28 +233,36 @@ impl StructureRegion {
         Some(unsafe { pos.assume_init() }.into())
     }
 
-    /// Moves [self] to the region of the given [BlockPosition]
+    /// Moves [self] to the region of the given [`BlockPosition`]
     pub fn set_new_minecraft_pos(&mut self, pos: BlockPosition) {
-        (self.x, self.z) = pos.scale_by_num(self.region_size as i32);
+        (self.x, self.z) = pos.scale_by_num(i32::from(self.region_size));
     }
 
     /// Gets the region sife of [self] in chunks
-    pub fn region_size_chunks(&self) -> i32 {
+    #[inline]
+    #[must_use]
+    pub const fn region_size_chunks(&self) -> i32 {
         self.region_size as i32
     }
 
     /// Gets the region size of [self] in blocks
-    pub fn region_size_blocks(&self) -> i32 {
+    #[inline]
+    #[must_use]
+    pub const fn region_size_blocks(&self) -> i32 {
         (self.region_size as i32) * 16
     }
 
     /// Gets the minecraft version of [self]
-    pub fn minecraft_verions(&self) -> enums::MCVersion {
+    #[inline]
+    #[must_use]
+    pub const fn minecraft_verions(&self) -> enums::MCVersion {
         self.minecraft_version
     }
 
     /// Gets the structure type of [self]
-    pub fn structure_type(&self) -> enums::StructureType {
+    #[inline]
+    #[must_use]
+    pub const fn structure_type(&self) -> enums::StructureType {
         self.structure_type
     }
 }
@@ -260,10 +271,10 @@ fn get_structure_scale(
     structure_type: enums::StructureType,
     minecraft_version: enums::MCVersion,
 ) -> Result<i8, StructureGenerationError> {
+    let mut sconf: MaybeUninit<cubiomes_sys::StructureConfig> = MaybeUninit::uninit();
+
     // SAFETY: sconf is initialized if GetStructureConfig did not return 0
     unsafe {
-        let mut sconf: MaybeUninit<cubiomes_sys::StructureConfig> = MaybeUninit::uninit();
-
         match cubiomes_sys::getStructureConfig(
             structure_type as i32,
             minecraft_version as i32,
@@ -272,78 +283,5 @@ fn get_structure_scale(
             0 => Err(StructureGenerationError::CubiomesError),
             _ => Ok(sconf.assume_init().regionSize),
         }
-    }
-}
-
-/// An iterator over the strongholds in a [Generator]
-///
-/// As the strongholds in minecraft are generated iteratively,
-/// we use an iterator for generating them.
-///
-/// The iterator produces the [BlockPosition] of the next stronghold
-/// until all strongholds are generated.
-///
-/// # Examples
-/// ```
-#[doc = include_str!("../../examples/generate_strongholds.rs")]
-/// ```
-#[derive(Debug)]
-pub struct Strongholds<'a> {
-    generator: &'a Generator,
-    inner: cubiomes_sys::StrongholdIter,
-    strongholds_left: usize,
-}
-
-impl<'a> Generator {
-    /// Constructs an iterator over the strongholds in this generator
-    ///
-    /// Constructs a new [Strongholds] from [self]. See [Strongholds]
-    /// for usage
-    pub fn strongholds(&'a self) -> Strongholds<'a> {
-        let mut sh_iter: MaybeUninit<cubiomes_sys::StrongholdIter> = MaybeUninit::uninit();
-
-        // SAFETY: ffi function is called correctly
-        unsafe {
-            cubiomes_sys::initFirstStronghold(
-                sh_iter.as_mut_ptr(),
-                self.minecraft_version() as i32,
-                transmute::<i64, u64>(self.seed()),
-            );
-        }
-
-        // We subtract one since cubiomes strongholds left is weird like that
-        let strongholds_left =
-            // SAFETY: ffi function is called correctly
-            unsafe { cubiomes_sys::nextStronghold(sh_iter.as_mut_ptr(), self.as_ptr()) } as usize
-                - 1;
-
-        Strongholds {
-            generator: self,
-            // SAFETY: sh_iter was initialized by ffi
-            inner: unsafe { sh_iter.assume_init() },
-            strongholds_left,
-        }
-    }
-}
-
-impl Iterator for Strongholds<'_> {
-    type Item = BlockPosition;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if 0 == self.strongholds_left {
-            return None;
-        }
-        // We subtract one since cubiomes strongholds left is weird like that
-        self.strongholds_left =
-            // SAFETY: ffi function is called correctly, and as we checked strongholds_left we aren't iterating beyond its borders
-            unsafe { cubiomes_sys::nextStronghold(&mut self.inner, self.generator.as_ptr()) }
-                as usize
-                - 1;
-
-        Some(self.inner.pos.into())
-    }
-
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        (self.strongholds_left, Some(self.strongholds_left))
     }
 }

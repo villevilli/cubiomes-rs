@@ -1,7 +1,6 @@
 use crate::enums::*;
 use crate::generator::{Generator, GeneratorFlags};
-
-use super::Strongholds;
+use crate::structures::strongholds::StrongholdIter;
 
 #[test]
 fn iterate_over_limit() {
@@ -12,7 +11,7 @@ fn iterate_over_limit() {
         GeneratorFlags::empty(),
     );
 
-    let iter: Strongholds = generator.strongholds();
+    let iter: StrongholdIter = generator.strongholds();
 
     let strongholds: Vec<crate::generator::BlockPosition> = iter.collect();
 

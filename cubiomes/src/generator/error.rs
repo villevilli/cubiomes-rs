@@ -1,11 +1,6 @@
-//! Errors related to [super::Generator] and [super::Range]
-
+//! Errors related to [`super::Generator`] and [`super::Range`]
 
 use thiserror::Error;
-
-
-
-
 
 /// An error with the generator
 ///
@@ -57,11 +52,11 @@ impl From<TryFromRangeError> for GeneratorError {
 
 /// The given size x y or z is too big to fit an i32 or x or z are zero.
 ///
-/// As cubiomes uses i32 for size, but states that it should be positive. (except for size_y)
+/// As cubiomes uses i32 for size, but states that it should be positive. (except for `size_y`)
 /// I opted to use an unsized integer for abstraction. The conversion will
-/// fail if either size_x or size_z is 0 or any size is bigger than [i32::MAX].
+/// fail if either `size_x` or `size_z` is 0 or any size is bigger than [`i32::MAX`].
 ///
-/// A size_y of 0 is equal to size_y of 1
+/// A `size_y` of 0 is equal to `size_y` of 1
 #[derive(Error, Debug, PartialEq, Eq, Clone, Copy, Hash, PartialOrd, Ord)]
 pub enum TryFromRangeError {
     #[error("x sixe is out of bounds for range")]

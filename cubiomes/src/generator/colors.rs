@@ -15,20 +15,21 @@ use std::{collections::BTreeMap, mem::MaybeUninit};
 /// The color scheme comes from cubiomes. The color scheme in cubiomes
 /// is strongly inspired by the color scheme used in
 /// [AMIDST](https://github.com/toolbox4minecraft/amidst/wiki/Biome-Color-Table)
+#[must_use]
 pub fn new_biome_color_map() -> BTreeMap<BiomeID, [u8; 3]> {
     let mut colors: MaybeUninit<[[u8; 3]; 256]> = MaybeUninit::uninit();
 
     // SAFETY: colors is the correct length of array for cubiomes.
     unsafe {
-        cubiomes_sys::initBiomeColors(colors.as_mut_ptr() as *mut [u8; 3]);
+        cubiomes_sys::initBiomeColors(colors.as_mut_ptr().cast::<[u8; 3]>());
     }
 
     // SAFETY: Colors was correctly initialized by ffi
     let colors = unsafe { colors.assume_init() };
 
-    BTreeMap::from_iter(
-        colors.into_iter().enumerate().filter_map(|(index, color)| {
-            BiomeID::from_usize(index).map(|biome_id| (biome_id, color))
-        }),
-    )
+    colors
+        .into_iter()
+        .enumerate()
+        .filter_map(|(index, color)| BiomeID::from_usize(index).map(|biome_id| (biome_id, color)))
+        .collect()
 }
