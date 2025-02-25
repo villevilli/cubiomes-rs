@@ -398,7 +398,7 @@ impl Cache<'_> {
     ///     GeneratorFlags::empty()
     /// );
     ///
-    /// let mut cache = generator.new_cache(Range {
+    /// let mut cache = Cache::new(&generator, Range {
     ///     scale: Scale::Block,
     ///     x: 512,
     ///     z: -512,
