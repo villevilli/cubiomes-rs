@@ -8,7 +8,7 @@ env:
   CARGO_TERM_COLOR: always
   # Make sure CI fails on all warnings
   RUSTFLAGS: "-Dwarnings"
-  RUSTDOCFLAGS: "-Dwarnigns"
+  RUSTDOCFLAGS: "-Dwarnings"
 
 permissions:
   contents: read
