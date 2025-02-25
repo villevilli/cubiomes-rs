@@ -26,13 +26,19 @@
 //! features have been wrapped by a safe rust api
 
 pub mod colors;
+pub mod error;
+mod range;
 
 mod position;
 
 #[cfg(test)]
 mod tests;
 
+use error::GeneratorError;
+use bitflags::bitflags;
 pub use position::*;
+pub use range::*;
+
 
 use std::{
     alloc::{alloc, dealloc, Layout},
@@ -40,79 +46,9 @@ use std::{
     mem::transmute,
 };
 
-use bitflags::bitflags;
-use thiserror::Error;
-
 use crate::enums;
 use cubiomes_sys::{getMinCacheSize, num_traits::FromPrimitive};
 
-/// An error with the generator
-///
-/// This enum is produced as an error from the generator
-#[derive(Error, Debug, PartialEq, Eq, Hash, Clone, Copy, PartialOrd, Ord)]
-pub enum GeneratorError {
-    /// Biomeid produced by cubiomes is not a valid biome
-    ///
-    /// This error indicates that the underlying cubiomes library produced
-    /// a biome that does not map to any valid biomeid. The out of range
-    /// biomeid is given as a parameter
-    ///
-    /// This error probably indicates a bug, so feel free to report
-    /// how you got it.
-    #[error("Biome id {0} is out of range and is not a valid biomeid")]
-    BiomeIDOutOfRange(i32),
-    /// The underlying cubiomes library indicates an error with your biome request
-    ///
-    /// Cubiomes function getBiomeAt returned -1. This might indicate forgetting to
-    /// initialize the seed.
-    #[error(
-        "Function getBiomeAt failed with error code -1, did you forgot to initialize the seed?"
-    )]
-    GetBiomeAtFailure,
-    /// Failed to fill the cache
-    ///
-    /// This indicates, that cubiomes failed to fill the cache and returned a non 0
-    /// exit code.
-    #[error("Function genBiomes failed with error code {0}")]
-    GenBiomeToCacheFailure(i32),
-    /// Index out of bounds while getting from the cache
-    ///
-    /// This indicates that [`Cache::biome_at()`] tried to get an index
-    /// outside the bounds of the internal vector. This either means that
-    /// the cache has not yet been filled, or you tried to get something outside
-    /// of the lenght of the vector
-    #[error("Index out of bounds")]
-    IndexOutOfBounds,
-    #[error("Failed to convert range")]
-    /// An error happened converting the range for use with cubiomes.
-    TryFromRangeError(TryFromRangeError),
-}
-
-impl From<TryFromRangeError> for GeneratorError {
-    fn from(value: TryFromRangeError) -> Self {
-        Self::TryFromRangeError(value)
-    }
-}
-
-/// The given size x y or z is too big to fit an i32 or x or z are zero.
-///
-/// As cubiomes uses i32 for size, but states that it should be positive. (except for size_y)
-/// I opted to use an unsized integer for abstraction. The conversion will
-/// fail if either size_x or size_z is 0 or any size is bigger than [i32::MAX].
-///
-/// A size_y of 0 is equal to size_y of 1
-#[derive(Error, Debug, PartialEq, Eq, Clone, Copy, Hash, PartialOrd, Ord)]
-pub enum TryFromRangeError {
-    #[error("x sixe is out of bounds for range")]
-    #[allow(missing_docs)]
-    XSizeOutOfBounds,
-    #[error("z size is out of bounds for range")]
-    #[allow(missing_docs)]
-    ZSizeOutOfBounds,
-    #[error("y size is out of bounds for range")]
-    #[allow(missing_docs)]
-    YSizeOutOfBouns,
-}
 
 bitflags! {
     /// Flags for the cubiomes generator
@@ -134,140 +70,6 @@ bitflags! {
     }
 }
 
-/// A scale for the [Range]
-///
-/// The scale reperesents valid options for giving to the generator
-/// as a scale.
-#[repr(i32)]
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
-pub enum Scale {
-    /// A scale of 1:1, Block scale
-    Block = 1,
-    /// A scale of 1:4
-    Quad = 4,
-    /// A scale of 1:16, the size of a minecraft chunk
-    Chunk = 16,
-    /// A scale of 1:64, the size of 4 minecraft chunks
-    QuadChunk = 64,
-    /// A scale of 1:256, half of a minecraft region
-    HalfRegion = 256,
-}
-
-impl Scale {
-    /// Scales a block coordinate according to this scale
-    ///
-    /// Divides the input number by the scale
-    pub fn scale_coord(&self, num: i32) -> i32 {
-        num / *self as i32
-    }
-
-    /// Reverses scaling done with this scale
-    ///
-    /// Turns whatever number is at this scale back to block coordinates
-    ///
-    /// Multiplies the input number with this scale
-    pub fn unscale_coord(&self, num: i32) -> i32 {
-        num * *self as i32
-    }
-}
-
-/// Size and position for a [Cache]
-///
-/// The range represents a location and size of a cache.
-///
-/// The position and size of the range is scaled by its [Range::scale] attribute.
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, PartialOrd, Ord)]
-pub struct Range {
-    /// Scale used for the coordinates
-    pub scale: Scale,
-    /// Position of the top left corner of the range, scaled by the [Scale]
-    ///
-    /// to map this into minecraft coordinates the x is multiplied by the scale
-    pub x: i32,
-    /// Position of the top left corner of the range, scaled by the [Scale]
-    ///
-    /// to map this into minecraft coordinates the x is multiplied by the scale
-    pub z: i32,
-    /// Size of the range in x coordinates, scaled by the [Scale]
-    ///
-    pub size_x: u32,
-    /// Size of the range in z coordinates, scaled by the [Scale]
-    pub size_z: u32,
-    /// The y coordinate of the range scaled either 1:1 or 1:4 depending on [Scale]
-    ///
-    /// Scale is 1:1 for [Scale::Block] other scales get a 1:4 mapping of the
-    /// y coordinate
-    pub y: i32,
-    /// Veritcal size of the cube. 0 and 1 mean a 2d plane
-    pub size_y: u32,
-}
-
-impl TryFrom<Range> for cubiomes_sys::Range {
-    type Error = GeneratorError;
-
-    fn try_from(value: Range) -> Result<Self, Self::Error> {
-        Ok(Self {
-            scale: value.scale as i32,
-            x: value.x,
-            z: value.z,
-            sx: value
-                .size_x
-                .try_into()
-                .map_err(|_| TryFromRangeError::XSizeOutOfBounds)
-                .and_then(|sx| err_if_zero(sx, TryFromRangeError::XSizeOutOfBounds))?,
-            sz: value
-                .size_z
-                .try_into()
-                .map_err(|_| TryFromRangeError::ZSizeOutOfBounds)
-                .and_then(|sz| err_if_zero(sz, TryFromRangeError::YSizeOutOfBouns))?,
-
-            y: value.y,
-            sy: value
-                .size_y
-                .try_into()
-                .map_err(|_| TryFromRangeError::YSizeOutOfBouns)?,
-        })
-    }
-}
-
-impl Range {
-    /// Checks if a given minecraft coordinate is within this range.
-    ///
-    /// First scales and then checks if a given coordinate is within this range.
-    pub fn is_inside(&self, x: i32, z: i32) -> bool {
-        ((self.x <= self.scale.scale_coord(x))
-            && (self.scale.scale_coord(x) < (self.x + self.size_x as i32)))
-            && ((self.z <= self.scale.scale_coord(z))
-                && (self.scale.scale_coord(z) < (self.z + self.size_z as i32)))
-    }
-
-    /// Tries to calculate a coordinate relative to this range.
-    ///
-    /// Tries to turn a global minecraft coordinate, to one inside this cache.
-    ///
-    /// Returns none if the coordinate is outside this cache
-    pub fn global_to_local_coord(&self, x: i32, z: i32) -> Option<(u32, u32)> {
-        if !self.is_inside(x, z) {
-            None
-        } else {
-            Some((
-                (self.scale.scale_coord(x) - self.x)
-                    .try_into()
-                    .expect("x should always been in range since we tested it before"),
-                (self.scale.scale_coord(z) - self.z)
-                    .try_into()
-                    .expect("z should always been in range since we tested it before"),
-            ))
-        }
-    }
-}
-
-fn err_if_zero(num: i32, err: TryFromRangeError) -> Result<i32, TryFromRangeError> {
-    if num == 0 {
-        return Err(err);
-    }
-    Ok(num)
-}
 
 /// The cubiomes generator
 ///

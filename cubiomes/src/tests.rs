@@ -3,7 +3,7 @@ use std::ffi::CStr;
 use cubiomes_sys::enums::{self, Dimension};
 
 use crate::enums::MCVersion;
-use crate::generator::{Generator, GeneratorError, GeneratorFlags, Range, Scale};
+use crate::generator::{Generator, error::GeneratorError, GeneratorFlags, Range, Scale};
 
 fn init_generator() -> Generator {
     let seed: i64 = -4804349703814383506;
