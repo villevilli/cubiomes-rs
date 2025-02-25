@@ -3,7 +3,7 @@ use std::time::Duration;
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use cubiomes::{
     enums::{Dimension, MCVersion},
-    generator::{BlockPosition, Generator, GeneratorFlags, Range},
+    generator::{BlockPosition, Cache, Generator, GeneratorFlags, Range},
 };
 use rand::{rngs::SmallRng, Rng, SeedableRng};
 
@@ -59,8 +59,7 @@ pub fn biome_generation_benchmark(c: &mut Criterion) {
         group.bench_with_input(BenchmarkId::from_parameter(seed), &seed, |bench, seed| {
             generator.apply_seed(Dimension::DIM_OVERWORLD, *seed);
             bench.iter(|| {
-                generator
-                    .new_cache(RANGE)
+                Cache::new(&generator, RANGE)
                     .fill_cache()
                     .expect("cubiomes failure");
             });

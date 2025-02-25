@@ -5,11 +5,11 @@
 //!
 //! # Usage
 //!
-//! For simple usage getting a biome at a specific place see [Generator::get_biome_at()]
+//! For simple usage getting a biome at a specific place see [`Generator::get_biome_at()`]
 //!
-//! For more complicated usage, use a [Cache] generated with [Generator::new_cache()]
+//! For more complicated usage, use a [Cache] generated with [`Generator::new_cache()`]
 //!
-//! For structure generation, see [crate::structures]
+//! For structure generation, see [`crate::structures`]
 //!
 //! ## Optimal height
 //!
@@ -34,11 +34,10 @@ mod position;
 #[cfg(test)]
 mod tests;
 
-use error::GeneratorError;
 use bitflags::bitflags;
+use error::GeneratorError;
 pub use position::*;
 pub use range::*;
-
 
 use std::{
     alloc::{alloc, dealloc, Layout},
@@ -48,7 +47,6 @@ use std::{
 
 use crate::enums;
 use cubiomes_sys::{getMinCacheSize, num_traits::FromPrimitive};
-
 
 bitflags! {
     /// Flags for the cubiomes generator
@@ -70,7 +68,6 @@ bitflags! {
     }
 }
 
-
 /// The cubiomes generator
 ///
 /// This is the struct which holds a cubiomes generator
@@ -91,7 +88,7 @@ impl Drop for Generator {
         // The memory is safe to deallocate as its been allocated in new
         // and the pointer to it is dropped, so it is never referred to again
         unsafe {
-            dealloc(self.generator as *mut u8, Layout::new::<Generator>());
+            dealloc(self.generator.cast::<u8>(), Layout::new::<Generator>());
         }
     }
 }
@@ -126,6 +123,7 @@ impl Generator {
     ///
     /// // Use the generator for something
     /// ```
+    #[must_use]
     pub fn new(
         mc_version: enums::MCVersion,
         seed: i64,
@@ -166,6 +164,7 @@ impl Generator {
     ///     generator = Generator::new_without_seed(mc_version, GeneratorFlags::empty());
     /// }
     /// ```
+    #[must_use]
     pub unsafe fn new_without_seed(version: enums::MCVersion, flags: GeneratorFlags) -> Self {
         // SAFETY:
         // The function is safe since the generated pointer
@@ -173,7 +172,7 @@ impl Generator {
         // the pointer is stored as a pointer
         unsafe {
             let generator =
-                alloc(Layout::new::<cubiomes_sys::Generator>()) as *mut cubiomes_sys::Generator;
+                alloc(Layout::new::<cubiomes_sys::Generator>()).cast::<cubiomes_sys::Generator>();
 
             cubiomes_sys::setupGenerator(generator, version as i32, flags.bits());
             Self { generator }
@@ -215,14 +214,16 @@ impl Generator {
     }
 
     /// Gets the seed of [self]
+    #[must_use]
     pub fn seed(&self) -> i64 {
         // SAFETY:
         // The generator pointer can't be null as its been initialized
         // when constructing this struct
-        unsafe { transmute((*self.generator).seed) }
+        unsafe { transmute::<u64, i64>((*self.generator).seed) }
     }
 
     /// Gets the minecraft version of [self]
+    #[must_use]
     pub fn minecraft_version(&self) -> enums::MCVersion {
         // SAFETY:
         // The generator pointer can't be null as its been initialized
@@ -233,7 +234,7 @@ impl Generator {
 
     /// Gets a raw mutable pointer to the underlying generator
     ///
-    /// This can be used for calling into functions from cubiomes_sys with
+    /// This can be used for calling into functions from `cubiomes_sys` with
     /// the raw pointer, or other activities invloving the raw cubiomes
     /// generator
     ///
@@ -249,11 +250,11 @@ impl Generator {
 
     /// Gets a raw const pointer to the underlying generator
     ///
-    /// This can be used for calling into cubiomes_sys with the raw pointer
+    /// This can be used for calling into `cubiomes_sys` with the raw pointer
     /// or other such things
     ///
     /// # Safety
-    /// The data the pointer points to, should not be mutated. Use [Self::as_mut_ptr()]
+    /// The data the pointer points to, should not be mutated. Use [`Self::as_mut_ptr()`]
     /// for mutating data.
     ///
     /// The pointer shouldn't outlive the generator, as when the generator is dropped
@@ -261,6 +262,7 @@ impl Generator {
     ///
     /// Also keep in mind thread safety. Do not mutate the type if you do not have
     /// exclusive access.
+    #[must_use]
     pub unsafe fn as_ptr(&self) -> *const cubiomes_sys::Generator {
         self.generator
     }
@@ -282,7 +284,7 @@ impl Generator {
     /// y can be either 0 or 1 for a plane
     ///
     /// # Panics
-    /// Panics if scale, size_x, or size_z are 0 or less and if size_y is less than 0
+    /// Panics if scale, `size_x`, or `size_z` are 0 or less and if `size_y` is less than 0
     unsafe fn unchecked_min_cache_size(
         &self,
         scale: i32,
@@ -302,8 +304,7 @@ impl Generator {
     /// # Safety
     /// The caller must guarantee, that the cache is able to contain the generated data.
     /// The best way to guarantee this, is to use a cache generated from this generator
-    /// using the [Self::new_cache()] function.
-    unsafe fn generate_biomes_to_cache(&self, cache: &mut Cache) -> Result<(), GeneratorError> {
+    unsafe fn unchecked_generate_biomes_to_cache(&self, cache: &mut Cache) -> Result<(), GeneratorError> {
         let result_num = cubiomes_sys::genBiomes(
             self.generator,
             cache.buffer.as_mut_ptr(),
@@ -326,32 +327,15 @@ impl Generator {
     }
 }
 
-impl<'a> Generator {
-    /// Generates a new cache for the given generator
-    ///
-    /// This function creates a new [`Cache`] against this version of the generator
-    pub fn new_cache(&'a self, range: Range) -> Cache<'a> {
-        let cache_size = self.min_cache_size_from_range(range);
-
-        let cache = Vec::with_capacity(cache_size);
-
-        Cache {
-            buffer: cache,
-            range,
-            generator: self,
-        }
-    }
-}
-
 /// A cache for generating and holding a chunk of biome data
 ///
-/// The cache is usually generated with [`Generator::new_cache()`]
+/// The cache is usually generated with [`Self::new()`]
 /// and holds a vector filled with biome data.
 #[derive(Clone)]
-pub struct Cache<'a> {
+pub struct Cache<'generator> {
     buffer: Vec<i32>,
     range: Range,
-    generator: &'a Generator,
+    generator: &'generator Generator,
 }
 
 //Custom dbg implementation, so we get the cache formatted as a table
@@ -362,20 +346,35 @@ impl Debug for Cache<'_> {
         writeln!(f, "Cache: ")?;
 
         for line in self.buffer.chunks(self.range.size_x as usize) {
-            writeln!(f, "{:?}", line)?
+            writeln!(f, "{line:?}")?;
         }
         Ok(())
     }
 }
 
 impl Cache<'_> {
+    /// Generates a new cache for the given generator
+    ///
+    /// This function creates a new [`Cache`] against this version of the generator
+    #[must_use]
+    pub fn new(generator: &Generator, range: Range) -> Cache {
+        let cache_size = generator.min_cache_size_from_range(range);
+        let cache = Vec::with_capacity(cache_size);
+
+        Cache {
+            buffer: cache,
+            range,
+            generator,
+        }
+    }
+
     /// Fills the cache so it can be read
     pub fn fill_cache(&mut self) -> Result<(), GeneratorError> {
         // Safety:
         // As the cache holds a reference to the generator, the generator
         // could not have been modified after the vec was allocated so the
         // vec inside this cache holds enough space for the generator
-        unsafe { self.generator.generate_biomes_to_cache(self) }
+        unsafe { self.generator.unchecked_generate_biomes_to_cache(self) }
     }
 
     /// Gets a reference to the internal representation of the cache.
@@ -415,6 +414,8 @@ impl Cache<'_> {
     ///
     /// assert_eq!(cache.as_vec()[(13 + cache.range().size_x + 5) as usize], BiomeID::plains as i32);
     ///
+    #[inline]
+    #[must_use]
     pub fn as_vec(&self) -> &Vec<i32> {
         &self.buffer
     }
@@ -425,6 +426,8 @@ impl Cache<'_> {
     /// if you want to read from the caches.
     ///
     /// See example from [`Self::as_vec()`] for example usage
+    #[inline]
+    #[must_use]
     pub fn range(&self) -> &Range {
         &self.range
     }
@@ -453,15 +456,15 @@ impl Cache<'_> {
     pub fn move_cache(&mut self, x: i32, y: i32, z: i32) {
         let new_range = Range {
             x,
-            y,
             z,
+            y,
             ..self.range
         };
 
         // As the size of the cache is only affeted by scale and size, moving the location won't
         // change the excpected cache size
 
-        self.range = new_range
+        self.range = new_range;
     }
 
     /// Calculates the actual size of readable data within the cache

@@ -1,6 +1,6 @@
 use cubiomes::{
     enums::{Dimension, MCVersion},
-    generator::{Generator, GeneratorFlags, Range},
+    generator::{Cache, Generator, GeneratorFlags, Range},
 };
 use rand::{rngs::SmallRng, Rng, SeedableRng};
 
@@ -42,7 +42,7 @@ fn test_random_points() {
             )
         });
 
-        let mut cache = generator.new_cache(Range { x, z, ..BASE_RANGE });
+        let mut cache = Cache::new(&generator, Range { x, z, ..BASE_RANGE });
         cache
             .fill_cache()
             .unwrap_or_else(|_| panic!("Failed to generate cache for range: {:?}", cache.range()));

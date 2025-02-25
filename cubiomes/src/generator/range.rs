@@ -1,9 +1,5 @@
 use super::error::{GeneratorError, TryFromRangeError};
 
-
-
-
-
 /// A scale for the [Range]
 ///
 /// The scale reperesents valid options for giving to the generator
@@ -27,7 +23,8 @@ impl Scale {
     /// Scales a block coordinate according to this scale
     ///
     /// Divides the input number by the scale
-    pub fn scale_coord(&self, num: i32) -> i32 {
+    #[must_use]
+    pub const fn scale_coord(&self, num: i32) -> i32 {
         num / *self as i32
     }
 
@@ -36,7 +33,8 @@ impl Scale {
     /// Turns whatever number is at this scale back to block coordinates
     ///
     /// Multiplies the input number with this scale
-    pub fn unscale_coord(&self, num: i32) -> i32 {
+    #[must_use]
+    pub const fn unscale_coord(&self, num: i32) -> i32 {
         num * *self as i32
     }
 }
@@ -45,7 +43,7 @@ impl Scale {
 ///
 /// The range represents a location and size of a cache.
 ///
-/// The position and size of the range is scaled by its [Range::scale] attribute.
+/// The position and size of the range is scaled by its [`Range::scale`] attribute.
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, PartialOrd, Ord)]
 pub struct Range {
     /// Scale used for the coordinates
@@ -65,7 +63,7 @@ pub struct Range {
     pub size_z: u32,
     /// The y coordinate of the range scaled either 1:1 or 1:4 depending on [Scale]
     ///
-    /// Scale is 1:1 for [Scale::Block] other scales get a 1:4 mapping of the
+    /// Scale is 1:1 for [`Scale::Block`] other scales get a 1:4 mapping of the
     /// y coordinate
     pub y: i32,
     /// Veritcal size of the cube. 0 and 1 mean a 2d plane
@@ -104,6 +102,7 @@ impl Range {
     /// Checks if a given minecraft coordinate is within this range.
     ///
     /// First scales and then checks if a given coordinate is within this range.
+    #[must_use]
     pub fn is_inside(&self, x: i32, z: i32) -> bool {
         ((self.x <= self.scale.scale_coord(x))
             && (self.scale.scale_coord(x) < (self.x + self.size_x as i32)))
@@ -116,18 +115,20 @@ impl Range {
     /// Tries to turn a global minecraft coordinate, to one inside this cache.
     ///
     /// Returns none if the coordinate is outside this cache
+    ///
+    #[must_use]
     pub fn global_to_local_coord(&self, x: i32, z: i32) -> Option<(u32, u32)> {
-        if !self.is_inside(x, z) {
-            None
-        } else {
+        if self.is_inside(x, z) {
             Some((
                 (self.scale.scale_coord(x) - self.x)
                     .try_into()
-                    .expect("x should always been in range since we tested it before"),
+                    .unwrap_or_else(|_| unreachable!()),
                 (self.scale.scale_coord(z) - self.z)
                     .try_into()
-                    .expect("z should always been in range since we tested it before"),
+                    .unwrap_or_else(|_| unreachable!()),
             ))
+        } else {
+            None
         }
     }
 }
