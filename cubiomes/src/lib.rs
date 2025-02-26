@@ -21,10 +21,10 @@
 #![warn(missing_debug_implementations)]
 #![warn(clippy::unwrap_used)]
 
+pub use cubiomes_sys::enums;
+
 pub mod generator;
 pub mod structures;
-
-pub use cubiomes_sys::enums;
 
 #[cfg(test)]
 mod tests;

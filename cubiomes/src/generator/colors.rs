@@ -1,8 +1,7 @@
 //! This module is used for biome color mappings
 
-use cubiomes_sys::num_traits::FromPrimitive;
-
 use crate::enums::BiomeID;
+use cubiomes_sys::num_traits::FromPrimitive;
 use std::{collections::BTreeMap, mem::MaybeUninit};
 
 /// Function returns a map of biomeids to colors
@@ -21,7 +20,7 @@ pub fn new_biome_color_map() -> BTreeMap<BiomeID, [u8; 3]> {
 
     // SAFETY: colors is the correct length of array for cubiomes.
     unsafe {
-        cubiomes_sys::initBiomeColors(colors.as_mut_ptr().cast::<[u8; 3]>());
+        cubiomes_sys::initBiomeColors(colors.as_mut_ptr() as *mut [u8; 3]);
     }
 
     // SAFETY: Colors was correctly initialized by ffi
