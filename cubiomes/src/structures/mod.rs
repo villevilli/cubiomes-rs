@@ -190,7 +190,7 @@ impl StructureRegion {
         let region_scale = get_structure_scale(structure_type, minecraft_version)?;
 
         // Multiply the scale by 16 since structure positions are in chunk size for some reason
-        let (x, z) = pos.scale_by_num(i32::from(region_scale) * 16);
+        let (x, z) = pos.scale_by_num((region_scale as i32) * 16);
 
         Ok(Self {
             x,
@@ -237,7 +237,7 @@ impl StructureRegion {
 
     /// Moves [self] to the region of the given [`BlockPosition`]
     pub fn set_new_minecraft_pos(&mut self, pos: BlockPosition) {
-        (self.x, self.z) = pos.scale_by_num(i32::from(self.region_size));
+        (self.x, self.z) = pos.scale_by_num(self.region_size as i32);
     }
 
     /// Gets the region sife of [self] in chunks

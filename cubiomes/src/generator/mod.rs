@@ -86,7 +86,7 @@ impl Drop for Generator {
         // The memory is safe to deallocate as its been allocated in new
         // and the pointer to it is dropped, so it is never referred to again
         unsafe {
-            dealloc(self.generator.cast::<u8>(), Layout::new::<Generator>());
+            dealloc(self.generator as *mut u8, Layout::new::<Generator>());
         }
     }
 }
@@ -170,7 +170,7 @@ impl Generator {
         // the pointer is stored as a pointer
         unsafe {
             let generator =
-                alloc(Layout::new::<cubiomes_sys::Generator>()).cast::<cubiomes_sys::Generator>();
+            alloc(Layout::new::<cubiomes_sys::Generator>()) as *mut cubiomes_sys::Generator;
 
             cubiomes_sys::setupGenerator(generator, version as i32, flags.bits());
             Self { generator }
