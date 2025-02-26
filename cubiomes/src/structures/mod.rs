@@ -7,11 +7,10 @@
 //! generating positions of strongholds, see [`strongholds::StrongholdIter`] and
 //! [`crate::generator::Generator::strongholds()`].
 
-#[cfg(test)]
-mod test;
-
 pub mod strongholds;
 
+#[cfg(test)]
+mod test;
 use std::mem::{transmute, MaybeUninit};
 
 use bitflags::bitflags;
