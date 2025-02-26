@@ -7,19 +7,17 @@
 //! generating positions of strongholds, see [`strongholds::StrongholdIter`] and
 //! [`crate::generator::Generator::strongholds()`].
 
-pub mod strongholds;
 
-#[cfg(test)]
-mod test;
+use crate::generator::{BlockPosition, Generator};
 use std::mem::{transmute, MaybeUninit};
-
 use bitflags::bitflags;
 use cubiomes_sys::enums::{self};
 use thiserror::Error;
-
 use enums::StructureType;
 
-use crate::generator::{BlockPosition, Generator};
+pub mod strongholds;
+#[cfg(test)]
+mod test;
 
 /// Reperesents an error in cubiomes
 #[derive(Error, Debug, PartialEq, Eq, Hash, Clone, Copy, PartialOrd, Ord)]

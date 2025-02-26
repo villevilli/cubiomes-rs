@@ -1,5 +1,4 @@
 use cubiomes_sys::Pos;
-
 use super::range::Scale;
 
 ///A 2d position inside minecraft

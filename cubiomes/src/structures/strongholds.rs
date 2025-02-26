@@ -1,9 +1,8 @@
 //! Module containing [StrongholdIter], an iterator which generates all the
 //! strongholds in a [Generator]
 
-use std::mem::{transmute, MaybeUninit};
-
 use crate::generator::{BlockPosition, Generator};
+use std::mem::{transmute, MaybeUninit};
 
 /// An iterator over the strongholds in a [Generator]
 ///

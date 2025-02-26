@@ -25,28 +25,26 @@
 //! This module follow closely to how the underlying cubiomes library works, but the
 //! features have been wrapped by a safe rust api
 
-pub mod colors;
-pub mod error;
-mod range;
-
-mod position;
-
-#[cfg(test)]
-mod tests;
-
-use bitflags::bitflags;
-use error::GeneratorError;
 pub use position::*;
 pub use range::*;
 
+use crate::enums;
+use bitflags::bitflags;
+use error::GeneratorError;
 use std::{
     alloc::{alloc, dealloc, Layout},
     fmt::Debug,
     mem::transmute,
 };
-
-use crate::enums;
 use cubiomes_sys::{getMinCacheSize, num_traits::FromPrimitive};
+
+pub mod colors;
+pub mod error;
+mod range;
+mod position;
+
+#[cfg(test)]
+mod tests;
 
 bitflags! {
     /// Flags for the cubiomes generator
