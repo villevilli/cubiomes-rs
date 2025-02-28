@@ -2,7 +2,7 @@ use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use cubiomes::{
     enums::{BiomeID, Dimension, MCVersion},
     generator::{
-        colors::{new_biome_color_map, BiomeColorMapArr},
+        colors::{new_biome_color_map, BiomeColorMap},
         BlockPosition, Cache, Generator, GeneratorFlags, Range,
     },
 };
@@ -126,7 +126,7 @@ pub fn compare_color_maps(c: &mut Criterion) {
 
         group.bench_function(BenchmarkId::new("arraymap", size.pow(2)), |bench| {
             let new_area = area.clone();
-            let color_map = BiomeColorMapArr::new();
+            let color_map = BiomeColorMap::new();
 
             bench.iter(|| {
                 black_box::<Vec<[u8; 3]>>(

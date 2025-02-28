@@ -2,11 +2,7 @@
 
 use crate::enums::BiomeID;
 use cubiomes_sys::num_traits::FromPrimitive;
-use std::{
-    collections::BTreeMap,
-    mem::MaybeUninit,
-    ops::{Index, IndexMut},
-};
+use std::{collections::BTreeMap, mem::MaybeUninit, ops::Index};
 
 /// Function returns a map of biomeids to colors
 ///
@@ -38,15 +34,15 @@ pub fn new_biome_color_map() -> BTreeMap<BiomeID, [u8; 3]> {
 }
 
 #[derive(Debug)]
-pub struct BiomeColorMapArr([[u8; 3]; 256]);
+pub struct BiomeColorMap([[u8; 3]; 256]);
 
-impl Default for BiomeColorMapArr {
+impl Default for BiomeColorMap {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl BiomeColorMapArr {
+impl BiomeColorMap {
     pub fn new() -> Self {
         let mut colors: MaybeUninit<[[u8; 3]; 256]> = MaybeUninit::uninit();
 
@@ -58,9 +54,19 @@ impl BiomeColorMapArr {
         // SAFETY: colors was initialized by ffi
         Self(unsafe { colors.assume_init() })
     }
+
+    #[inline]
+    pub fn as_arr(&self) -> &[[u8; 3]; 256] {
+        &self.0
+    }
+
+    #[inline]
+    pub fn to_arr(&self) -> [[u8; 3]; 256] {
+        self.0
+    }
 }
 
-impl Index<BiomeID> for BiomeColorMapArr {
+impl Index<BiomeID> for BiomeColorMap {
     type Output = [u8; 3];
 
     fn index(&self, index: BiomeID) -> &Self::Output {
