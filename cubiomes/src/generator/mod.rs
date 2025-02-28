@@ -30,18 +30,17 @@ pub use range::*;
 
 use crate::enums;
 use bitflags::bitflags;
+use cubiomes_sys::{getMinCacheSize, num_traits::FromPrimitive};
 use error::GeneratorError;
 use std::{
     alloc::{alloc, dealloc, Layout},
     fmt::Debug,
     mem::transmute,
 };
-use cubiomes_sys::{getMinCacheSize, num_traits::FromPrimitive};
 
-pub mod colors;
 pub mod error;
-mod range;
 mod position;
+mod range;
 
 #[cfg(test)]
 mod tests;
@@ -170,7 +169,7 @@ impl Generator {
         // the pointer is stored as a pointer
         unsafe {
             let generator =
-            alloc(Layout::new::<cubiomes_sys::Generator>()) as *mut cubiomes_sys::Generator;
+                alloc(Layout::new::<cubiomes_sys::Generator>()) as *mut cubiomes_sys::Generator;
 
             cubiomes_sys::setupGenerator(generator, version as i32, flags.bits());
             Self { generator }

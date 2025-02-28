@@ -12,6 +12,7 @@
 //! See each module for usage of a specific feature of the library.
 //!
 //! - For biome generation see [`crate::generator`]
+//! - For biome colormaps see [`crate::colors`]
 //! - For structure geneartion see [`crate::structures`]
 //!
 
@@ -24,6 +25,7 @@
 
 pub use cubiomes_sys::enums;
 
+pub mod colors;
 pub mod generator;
 pub mod structures;
 
