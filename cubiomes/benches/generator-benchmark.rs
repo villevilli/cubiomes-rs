@@ -1,10 +1,14 @@
-use std::time::Duration;
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use cubiomes::{
-    enums::{Dimension, MCVersion},
-    generator::{BlockPosition, Cache, Generator, GeneratorFlags, Range},
+    enums::{BiomeID, Dimension, MCVersion},
+    generator::{
+        colors::{new_biome_color_map, BiomeColorMapArr},
+        BlockPosition, Cache, Generator, GeneratorFlags, Range,
+    },
 };
+use cubiomes_sys::num_traits::FromPrimitive;
 use rand::{rngs::SmallRng, Rng, SeedableRng};
+use std::{hint::black_box, time::Duration};
 
 const RNG_SEED: u64 = 90825401;
 const RANGE: Range = Range {
@@ -83,10 +87,66 @@ pub fn stronghold_generation(c: &mut Criterion) {
     }
 }
 
+pub fn compare_color_maps(c: &mut Criterion) {
+    let mut generator = init_generator();
+    let seed = 48527923439;
+    generator.apply_seed(Dimension::DIM_OVERWORLD, seed);
+
+    let mut group = c.benchmark_group("compare_color_maps");
+
+    group.sample_size(500);
+
+    for size in [512, 1024, 2048, 4096, 8196] {
+        let mut area = Cache::new(
+            &generator,
+            Range {
+                size_x: size,
+                size_z: size,
+                ..RANGE
+            },
+        );
+
+        area.fill_cache().expect("Failed to fill cache");
+
+        let area = area.as_vec();
+
+        group.bench_function(BenchmarkId::new("btreemap", size.pow(2)), |bench| {
+            let new_area = area.clone();
+            let color_map = new_biome_color_map();
+
+            bench.iter(|| {
+                black_box::<Vec<[u8; 3]>>(
+                    new_area
+                        .iter()
+                        .map(|pixel| color_map[&BiomeID::from_i32(*pixel).unwrap()])
+                        .collect(),
+                );
+            });
+        });
+
+        group.bench_function(BenchmarkId::new("arraymap", size.pow(2)), |bench| {
+            let new_area = area.clone();
+            let color_map = BiomeColorMapArr::new();
+
+            bench.iter(|| {
+                black_box::<Vec<[u8; 3]>>(
+                    new_area
+                        .iter()
+                        .map(|pixel| color_map[BiomeID::from_i32(*pixel).unwrap()])
+                        .collect(),
+                );
+            });
+        });
+    }
+
+    group.finish();
+}
+
 criterion_group!(
     benches,
     biome_generation_benchmark,
     generator_initialization,
-    stronghold_generation
+    stronghold_generation,
+    compare_color_maps
 );
 criterion_main!(benches);
