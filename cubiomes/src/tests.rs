@@ -1,9 +1,9 @@
+use crate::colors;
 use crate::enums::MCVersion;
-use crate::generator::{Cache, error::GeneratorError, Generator, GeneratorFlags, Range, Scale};
+use crate::generator::{error::GeneratorError, Cache, Generator, GeneratorFlags, Range, Scale};
 
-use std::ffi::CStr;
 use cubiomes_sys::enums::{self, Dimension};
-
+use std::ffi::CStr;
 
 fn init_generator() -> Generator {
     let seed: i64 = -4804349703814383506;
@@ -98,4 +98,13 @@ fn test_range_border_in_bounds() {
 fn test_range_outside_bounds() {
     let range = Range { ..SOME_RANGE };
     assert!(range.is_inside(32, 32));
+}
+
+#[test]
+fn init_biome_colors() {
+    let colors = colors::new_biome_color_map();
+
+    dbg!(&colors);
+
+    assert_eq!(colors.len(), 94);
 }
