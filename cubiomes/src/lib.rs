@@ -15,6 +15,7 @@
 //! - For structure geneartion see [`crate::structures`]
 //!
 
+#![deny(clippy::ptr_cast_constness)]
 #![warn(clippy::undocumented_unsafe_blocks)]
 #![warn(missing_docs)]
 #![warn(missing_copy_implementations)]
