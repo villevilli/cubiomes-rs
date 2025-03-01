@@ -9,9 +9,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: install nightly
+    - name: Install nightly toolchain
       run: | 
         rustup toolchain install nightly
         rustup component add --toolchain nightly-x86_64-unknown-linux-gnu rustfmt
+    - name: Checkout
+      uses: actions/checkout@v4
     - name: check formatting
       run: cargo +nightly fmt -- --check
