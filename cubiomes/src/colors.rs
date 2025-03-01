@@ -1,8 +1,9 @@
 //! This module is used for biome color mappings.
 //!
-//! The module contains a function to generate a [BTreeMap] of biome id:s to
-//! colors, and a faster [BiomeColorMap] which uses an array backend to map
-//! biomes into colors
+//! The module contains [BiomeColorMap] which uses an array backend to map
+//! biomes into colors. There is also a functino to generate a [BTreeMap] which
+//! maps biomes into colors. Its benchmarked to be slower than using
+//! [BiomeColorMap]
 
 use crate::enums::BiomeID;
 use cubiomes_sys::num_traits::FromPrimitive;
@@ -10,10 +11,11 @@ use std::{collections::BTreeMap, mem::MaybeUninit, ops::Index};
 
 /// Function returns a map of biomeids to colors
 ///
-/// This function is useful for generating pictures of biome maps as a binary tree.
+/// Using a [`BiomeColorMap`] is probably faster, unless you desire a map type
+/// for some reason.
 ///
-/// Using a [`BiomeColorMap`] is probably faster, unless you desire a map type for
-/// some reason.
+/// This function is useful for generating pictures of biome maps as a binary
+/// tree.
 ///
 /// The colors are mapped as an array, the elements corresponding
 /// to the Red Green And blue value respectively. eg \[RED, GREEN, BLUE]
