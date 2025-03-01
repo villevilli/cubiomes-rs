@@ -43,7 +43,8 @@ impl Scale {
 ///
 /// The range represents a location and size of a cache.
 ///
-/// The position and size of the range is scaled by its [`Range::scale`] attribute.
+/// The position and size of the range is scaled by its [`Range::scale`]
+/// attribute.
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash, PartialOrd, Ord)]
 pub struct Range {
     /// Scale used for the coordinates
@@ -57,11 +58,11 @@ pub struct Range {
     /// to map this into minecraft coordinates the x is multiplied by the scale
     pub z: i32,
     /// Size of the range in x coordinates, scaled by the [Scale]
-    ///
     pub size_x: u32,
     /// Size of the range in z coordinates, scaled by the [Scale]
     pub size_z: u32,
-    /// The y coordinate of the range scaled either 1:1 or 1:4 depending on [Scale]
+    /// The y coordinate of the range scaled either 1:1 or 1:4 depending on
+    /// [Scale]
     ///
     /// Scale is 1:1 for [`Scale::Block`] other scales get a 1:4 mapping of the
     /// y coordinate
@@ -115,7 +116,6 @@ impl Range {
     /// Tries to turn a global minecraft coordinate, to one inside this cache.
     ///
     /// Returns none if the coordinate is outside this cache
-    ///
     #[must_use]
     pub fn global_to_local_coord(&self, x: i32, z: i32) -> Option<(u32, u32)> {
         if self.is_inside(x, z) {

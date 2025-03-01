@@ -7,13 +7,12 @@
 //! generating positions of strongholds, see [`strongholds::StrongholdIter`] and
 //! [`crate::generator::Generator::strongholds()`].
 
-
 use crate::generator::{BlockPosition, Generator};
-use std::mem::{transmute, MaybeUninit};
 use bitflags::bitflags;
 use cubiomes_sys::enums::{self};
-use thiserror::Error;
 use enums::StructureType;
+use std::mem::{transmute, MaybeUninit};
+use thiserror::Error;
 
 pub mod strongholds;
 #[cfg(test)]
@@ -108,15 +107,16 @@ impl Generator {
 /// be initialized for the same seed and region used to generate the
 /// generation attempt.
 ///
-/// Alternatively you can just use [Generator::try_generate_structure_in_region()]
-/// which will perform all of this automatically.
+/// Alternatively you can just use
+/// [Generator::try_generate_structure_in_region()] which will perform all of
+/// this automatically.
 ///
 /// # Examples
 /// ## Finding structures within a seed
 /// ```
 #[doc = include_str!("../../examples/find_structures.rs")]
 /// ```
-///
+/// 
 /// ## Finding a seed with a specific structure at spawn
 ///
 /// It should be noted, that only the lower 48 bits of the seed affect
@@ -129,16 +129,14 @@ impl Generator {
 /// that an attempt exist in your wanted region. Once you've found the attempts,
 /// you can modify the top 16 bits until the biomes match. This example
 /// demonstrates how to achieve this.
-///
 /// ```
 #[doc = include_str!("../../examples/efficient_structure_hunting.rs")]
 /// ```
-///
+/// 
 /// # Details
 ///
 /// The size of each region can be acquired with [Self::region_size_blocks()]
 /// or [Self::region_size_chunks()] respectively.
-///
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, PartialOrd, Ord)]
 pub struct StructureRegion {
     /// The x position of [self].
@@ -160,7 +158,8 @@ impl StructureRegion {
     /// Creates a new [`StructureRegion`]
     ///
     /// This function creates a new structure region position at the given
-    /// region x and z value with the given [`StructureType`] and [`enums::MCVersion`]
+    /// region x and z value with the given [`StructureType`] and
+    /// [`enums::MCVersion`]
     pub fn new(
         region_x: i32,
         region_z: i32,
@@ -189,7 +188,8 @@ impl StructureRegion {
     ) -> Result<Self, StructureGenerationError> {
         let region_scale = get_structure_scale(structure_type, minecraft_version)?;
 
-        // Multiply the scale by 16 since structure positions are in chunk size for some reason
+        // Multiply the scale by 16 since structure positions are in chunk size for some
+        // reason
         let (x, z) = pos.scale_by_num((region_scale as i32) * 16);
 
         Ok(Self {

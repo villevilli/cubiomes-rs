@@ -15,7 +15,8 @@ const MINECRAFT_VERSION: MCVersion = MCVersion::MC_1_21_WD;
 fn main() {
     let mut lower_48: i64 = 0;
 
-    // We initialize the position outside the first chunk so that we enter the while loop
+    // We initialize the position outside the first chunk so that we enter the while
+    // loop
     let mut pos = BlockPosition { x: 20, z: 20 };
 
     let structure_region = StructureRegion::new(0, 0, MINECRAFT_VERSION, STRUCTURE_TYPE)
