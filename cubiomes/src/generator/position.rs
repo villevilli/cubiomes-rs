@@ -1,5 +1,5 @@
-use cubiomes_sys::Pos;
 use super::range::Scale;
+use cubiomes_sys::Pos;
 
 ///A 2d position inside minecraft
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]

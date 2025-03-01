@@ -17,18 +17,19 @@ pub enum GeneratorError {
     /// how you got it.
     #[error("Biome id {0} is out of range and is not a valid biomeid")]
     BiomeIDOutOfRange(i32),
-    /// The underlying cubiomes library indicates an error with your biome request
+    /// The underlying cubiomes library indicates an error with your biome
+    /// request
     ///
-    /// Cubiomes function getBiomeAt returned -1. This might indicate forgetting to
-    /// initialize the seed.
+    /// Cubiomes function getBiomeAt returned -1. This might indicate forgetting
+    /// to initialize the seed.
     #[error(
         "Function getBiomeAt failed with error code -1, did you forgot to initialize the seed?"
     )]
     GetBiomeAtFailure,
     /// Failed to fill the cache
     ///
-    /// This indicates, that cubiomes failed to fill the cache and returned a non 0
-    /// exit code.
+    /// This indicates, that cubiomes failed to fill the cache and returned a
+    /// non 0 exit code.
     #[error("Function genBiomes failed with error code {0}")]
     GenBiomeToCacheFailure(i32),
     /// Index out of bounds while getting from the cache
@@ -52,9 +53,10 @@ impl From<TryFromRangeError> for GeneratorError {
 
 /// The given size x y or z is too big to fit an i32 or x or z are zero.
 ///
-/// As cubiomes uses i32 for size, but states that it should be positive. (except for `size_y`)
-/// I opted to use an unsized integer for abstraction. The conversion will
-/// fail if either `size_x` or `size_z` is 0 or any size is bigger than [`i32::MAX`].
+/// As cubiomes uses i32 for size, but states that it should be positive.
+/// (except for `size_y`) I opted to use an unsized integer for abstraction. The
+/// conversion will fail if either `size_x` or `size_z` is 0 or any size is
+/// bigger than [`i32::MAX`].
 ///
 /// A `size_y` of 0 is equal to `size_y` of 1
 #[derive(Error, Debug, PartialEq, Eq, Clone, Copy, Hash, PartialOrd, Ord)]

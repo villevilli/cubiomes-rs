@@ -4,9 +4,9 @@
 //! This crate provides safe bindings for [cubiomes](https://github.com/Cubitect/cubiomes) by cubitect.
 //! Cubiomes is intended for use in seed finding and biome map generation.
 //!
-//! The crate is organized into different modules which loosely correspond to features
-//! available in cubiomes. The crate is still incomplete, as it doesn't provide all features
-//! available in cubiomes.
+//! The crate is organized into different modules which loosely correspond to
+//! features available in cubiomes. The crate is still incomplete, as it doesn't
+//! provide all features available in cubiomes.
 //!
 //! # Usage
 //! See each module for usage of a specific feature of the library.
@@ -14,7 +14,6 @@
 //! - For biome generation see [`crate::generator`]
 //! - For biome colormaps see [`crate::colors`]
 //! - For structure geneartion see [`crate::structures`]
-//!
 
 #![deny(clippy::ptr_cast_constness)]
 #![warn(clippy::undocumented_unsafe_blocks)]
