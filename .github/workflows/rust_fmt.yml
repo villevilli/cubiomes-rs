@@ -1,0 +1,15 @@
+name: rustfmt
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  fmt:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: install nightly
+      run: rustup toolchain install nightly
+    - name: check formatting
+      run: cargo +nightly fmt -- --check
