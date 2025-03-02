@@ -44,9 +44,8 @@ fn main() {
             y: 320,
             size_y: 0,
         },
-    );
-
-    cache.fill_cache().expect("Failed to fill cache");
+    )
+    .expect("Failed to generate cache");
 
     // Make an image buffer from the cache
     let img = cache.to_image(BiomeColorMap::new());
