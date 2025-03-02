@@ -19,8 +19,8 @@
 //! This create provides the following features, which are all enabled by
 //! default:
 //! - `image`: Provides the option to generate images from biome areas using the
-//!   [image](https://docs.rs/image/latest/image/) crate. Also see [generator::Cache::to_image()] for generating
-//!   the images.
+//!   [image](https://docs.rs/image/latest/image/) crate. Also see
+//!   [generator::Cache::to_image()] for generating the images.
 //!
 //! - `cc_build`: Build cubiomes using the [cc](https://docs.rs/cc/latest/cc/)
 //!   crate instead of make. It's benchamrked to be faster and might support
