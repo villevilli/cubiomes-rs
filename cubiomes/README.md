@@ -1,5 +1,5 @@
 # Cubiomes-rs
-![docs.rs](https://img.shields.io/docsrs/cubiomes)
+
 
 A (hopefully) safe rust wrapper to generate information about minecraft seeds
 using the cubiomes library.
@@ -17,7 +17,8 @@ For documentation and usage see [docs.rs](https://docs.rs/cubiomes/latest/cubiom
 Please also see the crate on [crates.io](https://crates.io/crates/cubiomes).
 
 ## Contributing
-The currently the library support biome and structure generation. 
+The currently the library support biome and structure generation. It cannot yet
+generate details about structure generation, such as layouts
 Feel free to submit issues or pull requests for the project. For bigger changes
 please open an issue to discuss them first.
 

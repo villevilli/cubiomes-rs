@@ -482,7 +482,7 @@ impl Cache<'_> {
         self.fill_cache()
     }
 
-    /// Generates an [`image::ImageBuffer`] from this cache.
+    /// Generates an `image::ImageBuffer` from this cache.
     ///
     /// This function requires crate feature image
     ///
