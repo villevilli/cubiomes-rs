@@ -7,6 +7,7 @@ The project follows semver
 ## [Unreleased]
 
 ### Added
+- Crate feature image for image generation using the image crate
 - Benchmarking using criterion
 - Colormap for mapping biomes to colors
 - added Cache::new(..) in favor of Generator::new_cache(..)
