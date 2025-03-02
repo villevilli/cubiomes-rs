@@ -1,10 +1,8 @@
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use cubiomes::{
+    colors::{new_biome_color_map, BiomeColorMap},
     enums::{BiomeID, Dimension, MCVersion},
-    generator::{
-        colors::{new_biome_color_map, BiomeColorMap},
-        BlockPosition, Cache, Generator, GeneratorFlags, Range,
-    },
+    generator::{BlockPosition, Cache, Generator, GeneratorFlags, Range},
 };
 use cubiomes_sys::num_traits::FromPrimitive;
 use rand::{rngs::SmallRng, Rng, SeedableRng};
