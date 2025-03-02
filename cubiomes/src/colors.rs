@@ -62,7 +62,26 @@ pub fn new_biome_color_map() -> BTreeMap<BiomeID, [u8; 3]> {
 /// array maps each biomeid number to a color. The id's which dont map to a id
 /// are 0.
 ///
-/// This approach was benchmarked to be faster than a map type. If you still
+/// # Usage
+///
+/// The map is meant to use by indexing
+///
+/// # Examples
+/// ```
+/// // Modify a specific biomes color from the default
+/// use cubiomes::{enums::BiomeID, colors::BiomeColorMap};
+///
+/// let mut color_map = BiomeColorMap::default();
+/// let new_color = [0, 120, 255];
+///
+/// color_map[BiomeID::badlands] = new_color;
+///
+/// assert_eq!(color_map[BiomeID::badlands], new_color);
+///
+/// ```
+///
+/// # Details
+/// The arraymap approach was benchmarked to be faster than a map type. If you still
 /// desire a seperate map type you can use [`new_biome_color_map()`] instead.
 #[derive(Debug, Clone, Copy)]
 pub struct BiomeColorMap([[u8; 3]; 256]);
@@ -74,7 +93,7 @@ impl Default for BiomeColorMap {
 }
 
 impl BiomeColorMap {
-    /// Constructs a new [BiomeColorMap] with colours from cubiomes.
+    /// Constructs a new [BiomeColorMap] with colors from cubiomes.
     #[must_use]
     pub fn new() -> Self {
         let mut colors: MaybeUninit<[[u8; 3]; 256]> = MaybeUninit::uninit();
