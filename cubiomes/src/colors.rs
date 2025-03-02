@@ -7,7 +7,11 @@
 
 use crate::enums::BiomeID;
 use cubiomes_sys::num_traits::FromPrimitive;
-use std::{collections::BTreeMap, mem::MaybeUninit, ops::Index};
+use std::{
+    collections::BTreeMap,
+    mem::MaybeUninit,
+    ops::{Index, IndexMut},
+};
 
 /// Function returns a map of biomeids to colors
 ///
@@ -84,11 +88,21 @@ impl BiomeColorMap {
         Self(unsafe { colors.assume_init() })
     }
 
-    /// Tries to get a specific [BiomeID]'s color from the map. If not found
+    /// Gets a specific [BiomeID]'s color from the map. If not found
     /// (for some reason) returns [None]. The map should contain all biomes.
     #[must_use]
-    pub fn get(&self, idx: BiomeID) -> Option<&[u8; 3]> {
-        self.0.get(idx as usize)
+    pub fn get(&self, idx: BiomeID) -> &[u8; 3] {
+        self.0.get(idx as usize).expect("All values should exists")
+    }
+
+    /// Gets a mutable reference to a specific [BiomeID]'s color.
+    ///
+    /// The function can be used to mutate the color map
+    #[must_use]
+    pub fn get_mut(&mut self, idx: BiomeID) -> &mut [u8; 3] {
+        self.0
+            .get_mut(idx as usize)
+            .expect("All values should exist")
     }
 
     /// Returns a reference to the underlying array of the map.
@@ -111,5 +125,11 @@ impl Index<BiomeID> for BiomeColorMap {
 
     fn index(&self, index: BiomeID) -> &Self::Output {
         &self.0[index as usize]
+    }
+}
+
+impl IndexMut<BiomeID> for BiomeColorMap {
+    fn index_mut(&mut self, index: BiomeID) -> &mut Self::Output {
+        &mut self.0[index as usize]
     }
 }
