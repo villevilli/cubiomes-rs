@@ -476,6 +476,36 @@ impl Cache<'_> {
         self.range = new_range;
     }
 
+    /// Generates an [`image::ImageBuffer`] from this cache.
+    ///
+    /// This function requires crate feature image
+    ///
+    /// The imagebuffer is generated with the given
+    /// [`crate::colors::BiomeColorMap`]. The image is an rgb image.
+    ///
+    /// If you want to do further processing of the image. You'll probably need
+    /// to depend on the image crate in your project, as we dont re-export the
+    /// image crate.
+    ///
+    /// # Panics
+    /// Panics if the cache has not been filled.
+    ///
+    /// # Examples
+    /// ```
+    #[doc = include_str!("../../examples/generate_image.rs")]
+    /// ```
+    #[cfg(feature = "image")]
+    pub fn to_image(&self, color_map: crate::colors::BiomeColorMap) -> image::RgbImage {
+        use image::RgbImage;
+
+        RgbImage::from_fn(self.range.size_x, self.range.size_z, |x, z| {
+            color_map[self
+                .biome_at(x, 0, z)
+                .expect("Failed to get biome within cache (cache is probably unitialized)")]
+            .into()
+        })
+    }
+
     /// Calculates the actual size of readable data within the cache
     fn calculate_readable_cache_length(&self) -> usize {
         let y_size = match self.range.size_y {
