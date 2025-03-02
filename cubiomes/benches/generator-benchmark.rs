@@ -60,9 +60,7 @@ pub fn biome_generation_benchmark(c: &mut Criterion) {
         group.bench_with_input(BenchmarkId::from_parameter(seed), &seed, |bench, seed| {
             generator.apply_seed(Dimension::DIM_OVERWORLD, *seed);
             bench.iter(|| {
-                Cache::new(&generator, RANGE)
-                    .fill_cache()
-                    .expect("cubiomes failure");
+                Cache::new(&generator, RANGE).expect("cubiomes failure");
             });
         });
     }
@@ -95,16 +93,15 @@ pub fn compare_color_maps(c: &mut Criterion) {
     group.sample_size(500);
 
     for size in [512, 1024, 2048, 4096, 8196] {
-        let mut area = Cache::new(
+        let area = Cache::new(
             &generator,
             Range {
                 size_x: size,
                 size_z: size,
                 ..RANGE
             },
-        );
-
-        area.fill_cache().expect("Failed to fill cache");
+        )
+        .expect("Failed to fill cache");
 
         let area = area.as_vec();
 
