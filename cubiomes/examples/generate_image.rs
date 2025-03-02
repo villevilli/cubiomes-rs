@@ -33,7 +33,7 @@ fn main() {
     );
 
     // and cache
-    let mut cache = Cache::new(
+    let cache = Cache::new(
         &generator,
         Range {
             scale: Scale::Chunk,
