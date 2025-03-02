@@ -77,12 +77,12 @@ pub fn new_biome_color_map() -> BTreeMap<BiomeID, [u8; 3]> {
 /// color_map[BiomeID::badlands] = new_color;
 ///
 /// assert_eq!(color_map[BiomeID::badlands], new_color);
-///
 /// ```
 ///
 /// # Details
-/// The arraymap approach was benchmarked to be faster than a map type. If you still
-/// desire a seperate map type you can use [`new_biome_color_map()`] instead.
+/// The arraymap approach was benchmarked to be faster than a map type. If you
+/// still desire a seperate map type you can use [`new_biome_color_map()`]
+/// instead.
 #[derive(Debug, Clone, Copy)]
 pub struct BiomeColorMap([[u8; 3]; 256]);
 
