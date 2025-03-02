@@ -14,6 +14,17 @@
 //! - For biome generation see [`crate::generator`]
 //! - For biome colormaps see [`crate::colors`]
 //! - For structure geneartion see [`crate::structures`]
+//!
+//! # Features
+//! This create provides the following features, which are all enabled by
+//! default:
+//! - `image`: Provides the option to generate images from biome areas using the
+//!   [`image`] crate. see [`generator::Cache::to_image()`] for generating
+//!   images
+//!
+//! - `cc_build`: Build cubiomes using the [`cc`](https://docs.rs/cc/latest/cc/)
+//!   crate instead of make. It's benchamrked to be faster and might support
+//!   more platforms than using make
 
 #![deny(clippy::ptr_cast_constness)]
 #![warn(clippy::undocumented_unsafe_blocks)]
