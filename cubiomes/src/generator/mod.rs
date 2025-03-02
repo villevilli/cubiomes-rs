@@ -16,10 +16,9 @@
 //!
 //! For the y value in generation you should generally use minecraft build limit
 //! for surface biomes in the overworld. (either 320 for post 1.18, or 255 for
-//! pre 1.18) Note that this isn't exhaustive, please check the [minecraft wiki](https://minecraft.wiki/w/Altitude#History)
-//! for an exhaustive list of changes in worldheight.
-//!
-//!
+//! pre 1.18) Note that this isn't exhaustive, please check the
+//! [minecraft wiki](https://minecraft.wiki/w/Altitude#History) for an
+//! exhaustive list of changes in worldheight.
 //!
 //! # Details
 //!
@@ -338,8 +337,12 @@ impl Generator {
 
 /// A cache for generating and holding a chunk of biome data
 ///
-/// The cache is usually generated with [`Self::new()`]
-/// and holds a vector filled with biome data.
+/// The cache is usually generated with [`Self::new()`] and holds a vector
+/// filled with biome data. The biome data is automatically updated whenever the
+/// cache is created or moved.
+///
+/// The cache should be thought of as a view into the generator which it was
+/// created with.
 #[derive(Clone)]
 pub struct Cache<'generator> {
     buffer: Vec<i32>,
@@ -365,21 +368,22 @@ impl Cache<'_> {
     /// Generates a new cache for the given generator
     ///
     /// This function creates a new [`Cache`] against this version of the
-    /// generator
-    #[must_use]
-    pub fn new(generator: &Generator, range: Range) -> Cache {
+    /// generator, and fills it.
+    pub fn new(generator: &Generator, range: Range) -> Result<Cache<'_>, GeneratorError> {
         let cache_size = generator.min_cache_size_from_range(range);
         let cache = Vec::with_capacity(cache_size);
 
-        Cache {
+        let mut cache = Cache {
             buffer: cache,
             range,
             generator,
-        }
+        };
+
+        cache.fill_cache().and(Ok(cache))
     }
 
     /// Fills the cache so it can be read
-    pub fn fill_cache(&mut self) -> Result<(), GeneratorError> {
+    fn fill_cache(&mut self) -> Result<(), GeneratorError> {
         // Safety:
         // As the cache holds a reference to the generator, the generator
         // could not have been modified after the vec was allocated so the
@@ -416,9 +420,7 @@ impl Cache<'_> {
     ///     size_z: 64,
     ///     y: 100,
     ///     size_y: 0,
-    /// });
-    ///
-    /// cache.fill_cache().expect("failed to fill cache");
+    /// }).expect("failed to fill cache");
     ///
     /// // Read the cache at z=32, x=5
     ///
@@ -458,11 +460,11 @@ impl Cache<'_> {
         enums::BiomeID::from_i32(raw_biomeid).ok_or(GeneratorError::BiomeIDOutOfRange(raw_biomeid))
     }
 
-    /// Moves the cache to new position x,y,z without reallocating the space
+    /// Moves the cache to the new position without a reallocation and fills it.
     ///
-    /// Moves the cache to the new position without allocation.
-    /// Can be used to generate multiple positions without reallocation.
-    pub fn move_cache(&mut self, x: i32, y: i32, z: i32) {
+    /// This function can be used to generate multiple areas in sequence,
+    /// without needing to reallocate memory, saving performance.
+    pub fn move_cache(&mut self, x: i32, y: i32, z: i32) -> Result<(), GeneratorError> {
         let new_range = Range {
             x,
             z,
@@ -474,6 +476,9 @@ impl Cache<'_> {
         // location won't change the excpected cache size
 
         self.range = new_range;
+
+        // Refills the cache with the new spot
+        self.fill_cache()
     }
 
     /// Generates an [`image::ImageBuffer`] from this cache.

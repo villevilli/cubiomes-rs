@@ -17,6 +17,7 @@ The project follows semver
 - Derives Ord and PartialOrd where it makes sense
 - Moved structures::Strongholds to structures::strongholds::StrongholdIter
 - Moved generator::GeneratorError to its own module error generator::error::GeneratorError
+- Cache now fills itself eagerly to allow for more ergonomic use
 
 ### Removed 
 - Generator::new_cache(..)
