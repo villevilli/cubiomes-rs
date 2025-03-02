@@ -6,6 +6,8 @@ The project follows semver
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-03-02
+
 ### Added
 - Crate feature image for image generation using the image crate
 - Benchmarking using criterion
@@ -23,12 +25,12 @@ The project follows semver
 - Generator::new_cache(..)
 
 
-## [0.2.1] - 2024-02-23
+## [0.2.1] - 2025-02-23
 
 ### Removed
 - Unnessecary re-export
 
-## [0.2.0] - 2024-02-22
+## [0.2.0] - 2025-02-22
 
 ### Added
 
@@ -43,12 +45,12 @@ The project follows semver
 
 - renamed Generator.buffer() -> Generator.as_vec()
 
-## [0.1.3] - 2024-02-17
+## [0.1.3] - 2025-02-17
 
 ### Fixed
 
 - Fixes a broken link in the docs
 
-## [0.1.2] - 2024-02-17
+## [0.1.2] - 2025-02-17
 
 Initial release on crates.io
