@@ -53,7 +53,7 @@ fn main() {
         upper_16 += 1;
         // We or the 16 bits to the lower 48 bits to get the full seed with
         // the structure at the specified coordinates
-        seed = lower_48 | upper_16 << 48;
+        seed = lower_48 | (upper_16 << 48);
 
         // We then update the seed of the generator for the next round of
         // the while loop
