@@ -8,7 +8,8 @@
 //! For simple usage getting a biome at a specific place see
 //! [`Generator::get_biome_at()`]
 //!
-//! For more complicated usage, use a [Cache] generated with [`Cache::new()`]
+//! For more complicated usage, use a [`Cache`] generated with [`Cache::new()`]
+//! And for generating images, see [`Cache::to_image()`].
 //!
 //! For structure generation, see [`crate::structures`]
 //!
