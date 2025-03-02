@@ -1,8 +1,9 @@
-use crate::colors;
+use crate::colors::{self, BiomeColorMap};
 use crate::enums::MCVersion;
 use crate::generator::{error::GeneratorError, Cache, Generator, GeneratorFlags, Range, Scale};
 
-use cubiomes_sys::enums::{self, Dimension};
+use cubiomes_sys::enums::{self, BiomeID, Dimension};
+use cubiomes_sys::num_traits::FromPrimitive;
 use std::ffi::CStr;
 
 fn init_generator() -> Generator {
@@ -106,4 +107,24 @@ fn init_biome_colors() {
     dbg!(&colors);
 
     assert_eq!(colors.len(), 94);
+}
+
+#[test]
+fn set_color() {
+    let mut colors = BiomeColorMap::default();
+
+    colors[BiomeID::badlands] = [13, 13, 2];
+
+    assert_eq!(colors[BiomeID::badlands], [13, 13, 2])
+}
+
+#[test]
+fn get_all_colors() {
+    let biome_color_map = BiomeColorMap::new();
+
+    for idx in 0..500 {
+        if let Some(biome) = BiomeID::from_u32(idx) {
+            let _ = biome_color_map.get(biome);
+        }
+    }
 }
