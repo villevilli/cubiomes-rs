@@ -17,7 +17,7 @@ cc_build = ["cubiomes-sys/cc_build"]
 [dependencies]
 thiserror = "2.0"
 bitflags = "2.0"
-cubiomes-sys = { path = "../cubiomes-sys", version = "0.1.1", default-features = false }
+cubiomes-sys = { path = "../cubiomes-sys", version = "0.1.2", default-features = false }
 image = { version = "0.25", default-features = false, optional = true }
 
 [dev-dependencies]
