@@ -42,10 +42,10 @@ fn test_random_points() {
             )
         });
 
-        let mut cache = Cache::new(&generator, Range { x, z, ..BASE_RANGE });
-        cache
-            .fill_cache()
-            .unwrap_or_else(|_| panic!("Failed to generate cache for range: {:?}", cache.range()));
+        let range = Range { x, z, ..BASE_RANGE };
+
+        let cache = Cache::new(&generator, range)
+            .unwrap_or_else(|_| panic!("Failed to generate cache for range: {:?}", range));
 
         let (scaled_x, scaled_z) = cache.range().global_to_local_coord(x, z).unwrap();
 

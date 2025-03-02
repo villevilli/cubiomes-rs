@@ -48,7 +48,7 @@ fn simple_biome_test_cached() -> Result<(), GeneratorError> {
     let mut generator = init_generator();
     generator.apply_seed(Dimension::DIM_OVERWORLD, -1693727681172482083);
 
-    let mut cache = Cache::new(
+    let cache = Cache::new(
         &generator,
         Range {
             scale: Scale::Block,
@@ -59,9 +59,8 @@ fn simple_biome_test_cached() -> Result<(), GeneratorError> {
             y: 64,
             size_y: 0,
         },
-    );
-
-    cache.fill_cache().expect("Failed to fill the cache");
+    )
+    .expect("Failed to fill the cache");
 
     dbg!(&cache);
 
