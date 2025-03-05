@@ -11,9 +11,12 @@ fn iterate_over_limit() {
         GeneratorFlags::empty(),
     );
 
-    let iter: StrongholdIter = generator.strongholds();
+    let mut iter: StrongholdIter = generator.strongholds();
 
-    let strongholds: Vec<crate::generator::BlockPosition> = iter.collect();
+    #[allow(clippy::unwrap_used)]
+    let len = iter.size_hint().1.unwrap();
 
-    dbg!(strongholds);
+    for _ in 0..(len + 50) {
+        iter.next();
+    }
 }
