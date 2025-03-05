@@ -20,7 +20,7 @@ fn init_generator() -> Generator {
 }
 
 #[test]
-fn biome_to_str_sanity() {
+fn biome_to_str_smoke() {
     let biome = enums::BiomeID::badlands;
     let version = MCVersion::MC_1_21_WD;
 
