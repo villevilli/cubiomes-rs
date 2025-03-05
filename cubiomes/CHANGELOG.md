@@ -9,6 +9,9 @@ The project follows semver
 ### Added
 - Heightamp generation
 
+### Fixed
+- Invalid test (gh issues #9, #10, #11)
+
 ## [0.3.0] - 2025-03-02
 
 ### Added
