@@ -6,6 +6,9 @@ The project follows semver
 
 ## [Unreleased]
 
+### Added
+- Heightamp generation
+
 ## [0.3.0] - 2025-03-02
 
 ### Added

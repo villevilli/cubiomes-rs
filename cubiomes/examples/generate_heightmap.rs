@@ -1,4 +1,4 @@
-// Generate image to a file called biome.png
+// Generate the heightmap as an image to a file called heightmap.png
 
 // We need to import image for writing the image file to disk as some format
 extern crate image;
@@ -8,22 +8,20 @@ extern crate image;
 use std::{
     fs::File,
     io::{BufWriter, Write},
+    thread::sleep,
+    time::{Duration, Instant},
 };
 
 use cubiomes::{
-    colors::BiomeColorMap,
     enums::{Dimension, MCVersion},
-    generator::{
-        Cache, Generator, GeneratorFlags, Range,
-        Scale::{self},
-    },
+    generator::{Generator, GeneratorFlags},
 };
 
 fn main() {
     // We initialize the generator
     let seed: i64 = -4804349823814383506;
     let mc_version = MCVersion::MC_1_21_WD;
-    let path = "biome.png";
+    let path = "heightmap.png";
 
     let generator = Generator::new(
         mc_version,
@@ -32,23 +30,14 @@ fn main() {
         GeneratorFlags::empty(),
     );
 
-    // and cache
-    let cache = Cache::new(
-        &generator,
-        Range {
-            scale: Scale::Quad,
-            x: 256,
-            z: 1024,
-            size_x: 256,
-            size_z: 256,
-            y: 320,
-            size_y: 0,
-        },
-    )
-    .expect("Failed to generate cache");
+    // Make an image buffer from the generator
+    let now = Instant::now();
 
-    // Make an image buffer from the cache
-    let img = cache.to_image(BiomeColorMap::new());
+    let img = generator
+        .generate_heightmap_image(256, 1024, 256, 256, 40.0, 100.0)
+        .expect("Overworld should always exist");
+
+    sleep(Duration::from_millis(100).saturating_sub(now.elapsed()));
 
     // Open a file
     let mut file = BufWriter::new(File::create(path).expect("Failed to open file"));
