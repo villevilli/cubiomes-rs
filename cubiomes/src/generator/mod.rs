@@ -31,12 +31,17 @@ pub use range::*;
 
 use crate::enums;
 use bitflags::bitflags;
-use cubiomes_sys::{getMinCacheSize, num_traits::FromPrimitive};
+use cubiomes_sys::{
+    enums::{Dimension, MCVersion},
+    getMinCacheSize, initSurfaceNoise, mapApproxHeight,
+    num_traits::FromPrimitive,
+    SurfaceNoise,
+};
 use error::GeneratorError;
 use std::{
     alloc::{alloc, dealloc, Layout},
     fmt::Debug,
-    mem::transmute,
+    mem::{transmute, MaybeUninit},
 };
 
 pub mod error;
@@ -123,7 +128,7 @@ impl Generator {
     /// ```
     #[must_use]
     pub fn new(
-        mc_version: enums::MCVersion,
+        mc_version: MCVersion,
         seed: i64,
         dimension: enums::Dimension,
         flags: GeneratorFlags,
@@ -164,7 +169,7 @@ impl Generator {
     /// }
     /// ```
     #[must_use]
-    pub unsafe fn new_without_seed(version: enums::MCVersion, flags: GeneratorFlags) -> Self {
+    pub unsafe fn new_without_seed(version: MCVersion, flags: GeneratorFlags) -> Self {
         // SAFETY:
         // The function is safe since the generated pointer
         // points to memory that can fit a Generator and
@@ -221,14 +226,86 @@ impl Generator {
         unsafe { transmute::<u64, i64>((*self.generator).seed) }
     }
 
+    /// Gets the current dimension of the generator
+    pub fn dimension(&self) -> enums::Dimension {
+        // SAFETY: self has been initialized so ptr shouldn't be null
+        unsafe { Dimension::from_i32((*self.as_ptr()).dim).expect("dimension not valid") }
+    }
+
     /// Gets the minecraft version of [self]
     #[must_use]
-    pub fn minecraft_version(&self) -> enums::MCVersion {
+    pub fn minecraft_version(&self) -> MCVersion {
         // SAFETY:
         // The generator pointer can't be null as its been initialized
         // when constructing this struct
-        enums::MCVersion::from_i32(unsafe { *self.generator }.mc)
+        MCVersion::from_i32(unsafe { *self.generator }.mc)
             .expect("Cubiomes generator has an invalid mc version")
+    }
+
+    /// Generates a vector containing approximate surface height within the
+    /// area.
+    ///
+    /// The surface noise is generated at [Scale::Quad], eg. locations map 1:4.
+    ///
+    /// The vector contains the approximate height of each position and is
+    /// indexed as follows: `[buf_z * size_z + x]`. With buf_z being relative to
+    /// the top left position of the buffer.
+    pub fn approx_surface_noise(
+        &self,
+        x: i32,
+        z: i32,
+        size_x: u32,
+        size_z: u32,
+    ) -> Option<Vec<f32>> {
+        if self.minecraft_version() == MCVersion::MC_B1_7
+            || self.minecraft_version() == MCVersion::MC_B1_8
+        {
+            todo!("Beta generator")
+        } else {
+            let capacity = (size_x * size_z) as usize;
+
+            let mut buff = Vec::with_capacity(capacity);
+
+            let mut surface_noise: MaybeUninit<SurfaceNoise> = MaybeUninit::uninit();
+
+            // SAFETY: Foreign function is called with correct arguments
+            unsafe {
+                initSurfaceNoise(
+                    surface_noise.as_mut_ptr(),
+                    (*self.as_ptr()).dim,
+                    self.seed_for_cubiomes(),
+                );
+            }
+
+            // SAFETY: Foreign function is called with correct arguments
+            //
+            // buff can hold enough items to be filled
+            // ids can be null according to docs
+            // surface noise is initialized
+            let res = unsafe {
+                mapApproxHeight(
+                    buff.as_mut_ptr(),
+                    std::ptr::null_mut(),
+                    self.as_ptr(),
+                    surface_noise.as_ptr(),
+                    x,
+                    z,
+                    size_x as i32,
+                    size_z as i32,
+                )
+            };
+
+            if res != 0 {
+                return None;
+            }
+
+            // SAFETY: as buff was filled with ffi it should hold capacity elements
+            unsafe {
+                buff.set_len(capacity);
+            }
+
+            Some(buff)
+        }
     }
 
     /// Gets a raw mutable pointer to the underlying generator
@@ -334,6 +411,56 @@ impl Generator {
 
         Ok(())
     }
+
+    unsafe fn seed_for_cubiomes(&self) -> u64 {
+        // SAFETY: Transmute between same sized primitives is safe
+        unsafe { transmute::<i64, u64>(self.seed()) }
+    }
+
+    /// Generates a heightmap for the supplied area between bottom and top
+    ///
+    /// This function generates a heightmap for the supplied area. Position is
+    /// given in [`Scale::Quad`], eg 1:4 scale.
+    ///
+    /// Black corresponds to `height <= bottom` and White `height >= top`. The
+    /// colors are mapped linearly in between the supplied values.
+    ///
+    /// Returns none if generator cannot generate a heightmap. For example if
+    /// trying to generate nether heights or end before end existed.
+    ///
+    /// # Examples
+    /// ```
+    #[doc = include_str!("../../examples/generate_heightmap.rs")]
+    /// ```
+    #[cfg(feature = "image")]
+    pub fn generate_heightmap_image(
+        &self,
+        x: i32,
+        z: i32,
+        size_x: u32,
+        size_z: u32,
+        bottom: f32,
+        top: f32,
+    ) -> Option<image::GrayImage> {
+        use image::GrayImage;
+
+        let buf = self.approx_surface_noise(x, z, size_x, size_z)?;
+
+        Some(GrayImage::from_fn(size_x, size_z, |img_x, img_z| {
+            [float_between(
+                buf[(img_z * size_z + img_x) as usize],
+                bottom,
+                top,
+            )]
+            .into()
+        }))
+    }
+}
+
+fn float_between(n: f32, bottom: f32, top: f32) -> u8 {
+    let range = top - bottom;
+
+    ((n - bottom) * ((u8::MAX as f32) / range)).clamp(u8::MIN as f32, u8::MAX as f32) as u8
 }
 
 /// A cache for generating and holding a chunk of biome data
