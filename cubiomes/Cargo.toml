@@ -1,6 +1,6 @@
 [package]
 name = "cubiomes"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2021"
 authors = ["Ville Kujala"]
 description = "A safe rust wrapper for the cubiome library"
