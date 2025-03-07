@@ -6,6 +6,8 @@ The project follows semver
 
 ## [Unreleased]
 
+## [0.3.2]
+
 ### Added
 - Surfacenoise
 
