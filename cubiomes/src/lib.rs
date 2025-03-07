@@ -11,9 +11,10 @@
 //! # Usage
 //! See each module for usage of a specific feature of the library.
 //!
-//! - For biome generation see [`crate::generator`]
-//! - For biome colormaps see [`crate::colors`]
-//! - For structure geneartion see [`crate::structures`]
+//! - For biome generation see [crate::generator]
+//! - For biome colormaps see [crate::colors]
+//! - For structure geneartion see [crate::structures]
+//! - For raw noise see [crate::noise]
 //!
 //! # Features
 //! This create provides the following features, which are all enabled by
