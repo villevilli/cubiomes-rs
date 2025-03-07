@@ -32,11 +32,14 @@
 #![warn(missing_copy_implementations)]
 #![warn(missing_debug_implementations)]
 #![warn(clippy::unwrap_used)]
+#![warn(clippy::todo)]
+#![warn(clippy::missing_panics_doc)]
 
 pub use cubiomes_sys::enums;
 
 pub mod colors;
 pub mod generator;
+pub mod noise;
 pub mod structures;
 
 #[cfg(test)]

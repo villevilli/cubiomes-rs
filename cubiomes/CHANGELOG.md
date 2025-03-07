@@ -6,6 +6,12 @@ The project follows semver
 
 ## [Unreleased]
 
+### Added
+- Surfacenoise
+
+### Changed
+- Heightmap generation now requires explicit noise
+
 ## [0.3.1] - 2025-03-05
 
 ### Added
