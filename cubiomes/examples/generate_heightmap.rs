@@ -37,7 +37,7 @@ fn main() {
     let surface_noise = SurfaceNoiseRelease::new(Dimension::DIM_OVERWORLD, seed);
 
     let img = generator
-        .generate_heightmap_image(256, 1024, 256, 256, 40.0, 100.0, surface_noise.into())
+        .generate_heightmap_image(256, 1024, 256, 256, 40.0, 100.0, &surface_noise.into())
         .expect("Overworld should always exist");
 
     sleep(Duration::from_millis(100).saturating_sub(now.elapsed()));

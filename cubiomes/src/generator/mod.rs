@@ -269,7 +269,7 @@ impl Generator {
         z: i32,
         size_x: u32,
         size_z: u32,
-        surface_noise: BiomeNoise,
+        surface_noise: &BiomeNoise,
     ) -> Option<Vec<f32>> {
         if self.minecraft_version() == MCVersion::MC_B1_7
             || self.minecraft_version() == MCVersion::MC_B1_8
@@ -450,7 +450,7 @@ impl Generator {
         size_z: u32,
         bottom: f32,
         top: f32,
-        surface_noise: BiomeNoise,
+        surface_noise: &BiomeNoise,
     ) -> Option<image::GrayImage> {
         use image::GrayImage;
 
