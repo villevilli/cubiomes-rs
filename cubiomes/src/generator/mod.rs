@@ -29,19 +29,18 @@
 pub use position::*;
 pub use range::*;
 
-use crate::enums;
+use crate::{enums, noise::BiomeNoise};
 use bitflags::bitflags;
 use cubiomes_sys::{
     enums::{Dimension, MCVersion},
-    getMinCacheSize, initSurfaceNoise, mapApproxHeight,
+    getMinCacheSize, mapApproxHeight,
     num_traits::FromPrimitive,
-    SurfaceNoise,
 };
 use error::GeneratorError;
 use std::{
     alloc::{alloc, dealloc, Layout},
     fmt::Debug,
-    mem::{transmute, MaybeUninit},
+    mem::transmute,
 };
 
 pub mod error;
@@ -227,12 +226,18 @@ impl Generator {
     }
 
     /// Gets the current dimension of the generator
+    ///
+    /// # Panics
+    /// Panics if generator has an invalid dimension
     pub fn dimension(&self) -> enums::Dimension {
         // SAFETY: self has been initialized so ptr shouldn't be null
         unsafe { Dimension::from_i32((*self.as_ptr()).dim).expect("dimension not valid") }
     }
 
     /// Gets the minecraft version of [self]
+    ///
+    /// # Panics
+    /// Panics if the generator has an invalid MCVersion
     #[must_use]
     pub fn minecraft_version(&self) -> MCVersion {
         // SAFETY:
@@ -250,32 +255,34 @@ impl Generator {
     /// The vector contains the approximate height of each position and is
     /// indexed as follows: `[buf_z * size_z + x]`. With buf_z being relative to
     /// the top left position of the buffer.
+    ///
+    /// If noise is initialized for wrong version or dimension results may not
+    /// makes sense.
+    ///
+    /// # Panics
+    /// If attempting to generate surface noise for beta minecraft.
+    ///
+    /// Also panics if given an incorrect noicevariant.
     pub fn approx_surface_noise(
         &self,
         x: i32,
         z: i32,
         size_x: u32,
         size_z: u32,
+        surface_noise: BiomeNoise,
     ) -> Option<Vec<f32>> {
         if self.minecraft_version() == MCVersion::MC_B1_7
             || self.minecraft_version() == MCVersion::MC_B1_8
         {
-            todo!("Beta generator")
+            panic!("Surface height approximation not currently supported for beta minecraft")
         } else {
             let capacity = (size_x * size_z) as usize;
 
             let mut buff = Vec::with_capacity(capacity);
 
-            let mut surface_noise: MaybeUninit<SurfaceNoise> = MaybeUninit::uninit();
-
-            // SAFETY: Foreign function is called with correct arguments
-            unsafe {
-                initSurfaceNoise(
-                    surface_noise.as_mut_ptr(),
-                    (*self.as_ptr()).dim,
-                    self.seed_for_cubiomes(),
-                );
-            }
+            let BiomeNoise::Release(surface_noise) = surface_noise else {
+                panic!("Tried to use beta noise with non beta generator")
+            };
 
             // SAFETY: Foreign function is called with correct arguments
             //
@@ -412,6 +419,7 @@ impl Generator {
         Ok(())
     }
 
+    #[allow(unused)]
     unsafe fn seed_for_cubiomes(&self) -> u64 {
         // SAFETY: Transmute between same sized primitives is safe
         unsafe { transmute::<i64, u64>(self.seed()) }
@@ -433,6 +441,7 @@ impl Generator {
     #[doc = include_str!("../../examples/generate_heightmap.rs")]
     /// ```
     #[cfg(feature = "image")]
+    #[allow(clippy::too_many_arguments)]
     pub fn generate_heightmap_image(
         &self,
         x: i32,
@@ -441,10 +450,11 @@ impl Generator {
         size_z: u32,
         bottom: f32,
         top: f32,
+        surface_noise: BiomeNoise,
     ) -> Option<image::GrayImage> {
         use image::GrayImage;
 
-        let buf = self.approx_surface_noise(x, z, size_x, size_z)?;
+        let buf = self.approx_surface_noise(x, z, size_x, size_z, surface_noise)?;
 
         Some(GrayImage::from_fn(size_x, size_z, |img_x, img_z| {
             [float_between(

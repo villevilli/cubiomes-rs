@@ -110,6 +110,7 @@ impl BiomeColorMap {
     /// Gets a specific [BiomeID]'s color from the map. If not found
     /// (for some reason) returns [None]. The map should contain all biomes.
     #[must_use]
+    #[allow(clippy::missing_panics_doc)]
     pub fn get(&self, idx: BiomeID) -> &[u8; 3] {
         self.0.get(idx as usize).expect("All values should exists")
     }
@@ -118,6 +119,7 @@ impl BiomeColorMap {
     ///
     /// The function can be used to mutate the color map
     #[must_use]
+    #[allow(clippy::missing_panics_doc)]
     pub fn get_mut(&mut self, idx: BiomeID) -> &mut [u8; 3] {
         self.0
             .get_mut(idx as usize)
