@@ -2,6 +2,12 @@
 //!
 //! Unless you are doing something advanced, this module is only used for
 //! initializing noise used in heightmap generation.
+//!
+//! # Usage
+//! Sampling the raw noise
+//! ```
+#![doc = include_str!("../examples/sample_raw_noise.rs")]
+//! ```
 
 use std::{
     alloc::{self, dealloc, Layout},
@@ -57,6 +63,19 @@ impl SurfaceNoiseRelease {
             initSurfaceNoise(noise, dimension as i32, transmute::<i64, u64>(seed));
         }
         Self(noise)
+    }
+
+    /// Samples the underlying noise
+    pub fn sample_raw(&self, x: i32, y: i32, z: i32) -> f64 {
+        // SAFETY: The foreign function arguments are correct
+        unsafe { cubiomes_sys::sampleSurfaceNoise(self.as_ptr(), x, y, z) }
+    }
+
+    /// Samples the underlying noise, with min and max being minimum and maximum
+    /// noise.
+    pub fn sample_between(&self, x: i32, y: i32, z: i32, min: f64, max: f64) -> f64 {
+        // SAFETY: The foreign function arguments are correct.
+        unsafe { cubiomes_sys::sampleSurfaceNoiseBetween(self.as_ptr(), x, y, z, min, max) }
     }
 
     /// Gets the underlying pointer inside [self].
