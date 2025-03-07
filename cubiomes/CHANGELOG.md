@@ -6,7 +6,12 @@ The project follows semver
 
 ## [Unreleased]
 
-## [0.3.2]
+## [0.3.3]
+
+### Changed
+- Heighmap generation should takke a reference, not owning the noise
+
+## [0.3.2] [YANKED]
 
 ### Added
 - Surfacenoise
@@ -16,11 +21,6 @@ The project follows semver
 
 ## [0.3.1] - 2025-03-05
 
-### Added
-- Heightamp generation
-
-### Fixed
-- Invalid tests (gh #9, #10, #11)
 
 ## [0.3.0] - 2025-03-02
 
