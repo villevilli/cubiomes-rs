@@ -23,6 +23,7 @@ use crate::{biome2str, mc2str, str2mc, struct2str};
 pub enum ParseError {
     NonAsciiStr,
     NotMCVersion,
+    NotDimension,
     InvalidCString(std::ffi::NulError),
 }
 
@@ -31,6 +32,9 @@ impl Display for ParseError {
         match self {
             ParseError::NonAsciiStr => write!(f, "Value is not an ascii sequence"),
             ParseError::NotMCVersion => write!(f, "Value does not represent a minecraft version"),
+            ParseError::NotDimension => {
+                write!(f, "Value does not represent a valid minecraft dimension")
+            }
             ParseError::InvalidCString(_) => {
                 write!(f, "Could not format self as a c string")
             }
@@ -125,9 +129,35 @@ impl FromStr for MCVersion {
     }
 }
 
+impl Display for Dimension {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Dimension::DIM_NETHER => write!(f, "the_nether"),
+            Dimension::DIM_OVERWORLD => write!(f, "overworld"),
+            Dimension::DIM_END => write!(f, "the_end"),
+            // This should never exist unless magic was done
+            Dimension::DIM_UNDEF => write!(f, "undefined"),
+        }
+    }
+}
+
+impl FromStr for Dimension {
+    type Err = ParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "the_nether" => Ok(Self::DIM_NETHER),
+            "overworld" => Ok(Self::DIM_OVERWORLD),
+            "the_end" => Ok(Self::DIM_END),
+            "undefined" => Ok(Self::DIM_UNDEF),
+            _ => Err(ParseError::NotDimension),
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
-    use crate::enums::{BiomeID, MCVersion, StructureType};
+    use crate::enums::{BiomeID, Dimension, MCVersion, StructureType};
 
     #[test]
     fn test_biome_conversion() {
@@ -172,6 +202,43 @@ mod test {
         assert_eq!(
             MCVersion::MC_1_10_2,
             "1.10.2".parse().expect("parsing erro")
+        );
+    }
+
+    #[test]
+    fn test_dimension_parsing() {
+        assert_eq!(
+            Dimension::DIM_END,
+            Dimension::DIM_END
+                .to_string()
+                .parse()
+                .expect("Failed to parse"),
+            "the_end"
+        );
+        assert_eq!(
+            Dimension::DIM_OVERWORLD,
+            Dimension::DIM_OVERWORLD
+                .to_string()
+                .parse()
+                .expect("Failed to parse"),
+            "overworld"
+        );
+
+        assert_eq!(
+            Dimension::DIM_NETHER,
+            Dimension::DIM_NETHER
+                .to_string()
+                .parse()
+                .expect("Failed to parse"),
+            "the_nether"
+        );
+        assert_eq!(
+            Dimension::DIM_UNDEF,
+            Dimension::DIM_UNDEF
+                .to_string()
+                .parse()
+                .expect("Failed to parse"),
+            "undefined"
         );
     }
 }
