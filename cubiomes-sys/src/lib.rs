@@ -15,11 +15,4 @@ extern crate num_derive;
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
-/// This module contains generated rust enums representing different cubiomes
-/// enums
-///
-/// The enums in this module are automatically generated from the version of
-/// cubiomes this crate links against.
-pub mod enums {
-    include!(concat!(env!("OUT_DIR"), "/biome_enums.rs"));
-}
+pub mod enums;
