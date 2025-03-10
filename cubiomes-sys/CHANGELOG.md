@@ -6,6 +6,11 @@ The project follows semver
 
 ## [Unreleased]
 
+## [0.1.3]
+
+### Added
+- functions to display enum types
+
 ## [0.1.2] - 2025-03-02
 
 ### Changed
