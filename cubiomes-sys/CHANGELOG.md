@@ -9,7 +9,7 @@ The project follows semver
 ## [0.1.3]
 
 ### Added
-- functions to display enum types
+- functions to display and parse enum types
 
 ## [0.1.2] - 2025-03-02
 
