@@ -42,11 +42,9 @@ impl<'generator> Generator {
             );
         }
 
-        // We subtract one since cubiomes strongholds left is weird like that
         let strongholds_left =
             // SAFETY: ffi function is called correctly
-            unsafe { cubiomes_sys::nextStronghold(sh_iter.as_mut_ptr(), self.as_ptr()) } as usize
-                - 1;
+            unsafe { cubiomes_sys::nextStronghold(sh_iter.as_mut_ptr(), self.as_ptr()) } as usize;
 
         StrongholdIter {
             generator: self,
@@ -64,15 +62,15 @@ impl Iterator for StrongholdIter<'_> {
         if 0 == self.strongholds_left {
             return None;
         }
-        // We subtract one since cubiomes strongholds left is weird like that
+        let pos = self.inner.pos.into();
+
         self.strongholds_left =
             // SAFETY: ffi function is called correctly, and as we checked 
             // strongholds_left we aren't iterating beyond its borders
             unsafe { cubiomes_sys::nextStronghold(&mut self.inner, self.generator.as_ptr()) }
-                as usize
-                - 1;
+                as usize;
 
-        Some(self.inner.pos.into())
+        Some(pos)
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
