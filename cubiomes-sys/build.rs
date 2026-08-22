@@ -10,7 +10,9 @@ macro_rules! add_prefix {
     };
 }
 
-const C_OBJECTS: [&str; 8] = add_prefix!(
+// The xpple fork adds carver.c, terrainnoise.c and xradv.c alongside the
+// original eight; omitting them leaves undefined symbols at link time.
+const C_OBJECTS: [&str; 11] = add_prefix!(
     "cubiomes/",
     "noise.c",
     "biomes.c",
@@ -19,7 +21,10 @@ const C_OBJECTS: [&str; 8] = add_prefix!(
     "generator.c",
     "finders.c",
     "util.c",
-    "quadbase.c"
+    "quadbase.c",
+    "carver.c",
+    "terrainnoise.c",
+    "xradv.c"
 );
 
 #[derive(Debug)]
