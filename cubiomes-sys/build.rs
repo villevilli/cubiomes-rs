@@ -1,31 +1,8 @@
 #[cfg(not(feature = "cc_build"))]
 use std::process::Command;
-use std::{collections::HashSet, env, path::PathBuf};
+use std::{collections::HashSet, env, path::{Path, PathBuf}};
 
-macro_rules! add_prefix {
-    ($x:literal, $($y:literal),+) => {
-        [$(
-            concat!($x, $y),
-        )+]
-    };
-}
 
-// The xpple fork adds carver.c, terrainnoise.c and xradv.c alongside the
-// original eight; omitting them leaves undefined symbols at link time.
-const C_OBJECTS: [&str; 11] = add_prefix!(
-    "cubiomes/",
-    "noise.c",
-    "biomes.c",
-    "layers.c",
-    "biomenoise.c",
-    "generator.c",
-    "finders.c",
-    "util.c",
-    "quadbase.c",
-    "carver.c",
-    "terrainnoise.c",
-    "xradv.c"
-);
 
 #[derive(Debug)]
 struct IgnoreMacros(HashSet<String>);
@@ -134,5 +111,51 @@ fn build_with_make() {
 
 #[cfg(feature = "cc_build")]
 fn build_with_cc() {
-    cc::Build::new().files(C_OBJECTS).compile("cubiomes");
+    let mut build = cc::Build::new();
+    for f in collect_sources() {
+        build.file(f);
+    }
+    build.include("cubiomes");
+    // Variable-length arrays and variably-modified pointer types are standard
+    // C99 that MSVC has never implemented; clang accepts them, and the CI
+    // workflow points CC at clang-cl on Windows for exactly this reason.
+    build.flag_if_supported("-Wno-vla-extension");
+    build.compile("cubiomes");
+}
+
+/// Every `.c` file in the vendored tree except the test harness.
+///
+/// The sources are no longer a flat list: the fork keeps structure-piece code
+/// under `features/` and loot tables under `loot/`, roughly seventy files in
+/// all. Compiling only the root-level ones still links on macOS and Linux —
+/// their linkers dead-strip the unreferenced callers — but fails on Windows
+/// with unresolved externals, because MSVC resolves every symbol in an object
+/// it pulls in. Walking the tree keeps this correct as upstream adds files.
+fn collect_sources() -> Vec<PathBuf> {
+    fn walk(dir: &Path, out: &mut Vec<PathBuf>) {
+        let Ok(entries) = std::fs::read_dir(dir) else {
+            return;
+        };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_dir() {
+                walk(&path, out);
+            } else if path.extension().is_some_and(|e| e == "c")
+                && path.file_name().is_some_and(|n| n != "tests.c")
+            {
+                out.push(path);
+            }
+        }
+    }
+
+    let mut out = Vec::new();
+    walk(Path::new("cubiomes"), &mut out);
+    // Deterministic order, so the build is reproducible.
+    out.sort();
+    assert!(
+        out.len() > 8,
+        "found only {} C sources; the vendored tree looks wrong",
+        out.len()
+    );
+    out
 }
